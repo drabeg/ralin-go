@@ -10,12 +10,14 @@ const path = require('node:path');
 const { abrirBaseDeDatos } = require('./db/database');
 const { crearSimulador } = require('./lib/simulador');
 const { crearRutas, ErrorApi } = require('./api/rutas');
+const { crearRutasInsights } = require('./api/insights');
 
 const PUERTO = Number(process.env.PORT) || 3000;
 const CARPETA_PUBLICA = path.join(__dirname, 'public');
 const db = abrirBaseDeDatos(process.env.DB_PATH || path.join(__dirname, 'data', 'ralin.db'));
 const simulador = crearSimulador(db);
-const { rutas, registrarDispositivo } = crearRutas(db, simulador);
+const { rutas: rutasApp, registrarDispositivo } = crearRutas(db, simulador);
+const rutas = [...rutasApp, ...crearRutasInsights(db)];
 
 const TIPOS = {
   '.html': 'text/html; charset=utf-8',
@@ -27,7 +29,7 @@ const TIPOS = {
   '.png': 'image/png',
   '.ico': 'image/x-icon',
 };
-const PAGINAS = { '/': 'index.html', '/presentar': 'presentar.html' };
+const PAGINAS = { '/': 'index.html', '/presentar': 'presentar.html', '/insights': 'insights.html' };
 
 function enviar(res, estado, cuerpo, tipo = 'application/json; charset=utf-8') {
   const datos = typeof cuerpo === 'string' || Buffer.isBuffer(cuerpo) ? cuerpo : JSON.stringify(cuerpo);

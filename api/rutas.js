@@ -70,6 +70,8 @@ function crearRutas(db, simulador) {
       SELECT ca.codigo, ca.creado_en, t.nombre AS tienda FROM canjes ca
       JOIN tiendas t ON t.id = ca.tienda_id WHERE ca.cupon_id = ? AND ca.dispositivo_id = ?`),
     nuevoCanje: db.prepare('INSERT INTO canjes (cupon_id, dispositivo_id, tienda_id, codigo, creado_en) VALUES (?, ?, ?, ?, ?)'),
+    canjeHoy: db.prepare(`INSERT INTO ventas_diarias (fecha, tienda_id, producto_id, canjes) VALUES (?, ?, ?, 1)
+                          ON CONFLICT (fecha, tienda_id, producto_id) DO UPDATE SET canjes = canjes + 1`),
     dispositivo: db.prepare(`
       INSERT INTO dispositivos (id, primera_vez, ultima_vez) VALUES (?, ?, ?)
       ON CONFLICT (id) DO UPDATE SET ultima_vez = excluded.ultima_vez`),
@@ -123,6 +125,9 @@ function crearRutas(db, simulador) {
         'GET  /api/metricas',
         'POST /api/simular/venta           { "tienda_id": 1, "producto_id": 18, "unidades": 3 }',
         'GET  /api/qr.svg?texto=https://...',
+        'GET  /api/insights/marcas',
+        'GET  /api/insights/resumen?marca=Brisa Clara&dias=30&tienda=ID',
+        'GET  /api/insights/gondolas?marca=Brisa Clara',
       ],
     })],
 
@@ -185,6 +190,7 @@ function crearRutas(db, simulador) {
       const codigo = 'RG-' + crypto.randomBytes(4).toString('hex').toUpperCase().slice(0, 6);
       const ahora = new Date().toISOString();
       sql.nuevoCanje.run(cupon.id, dispositivo, tienda.id, codigo, ahora);
+      sql.canjeHoy.run(ahora.slice(0, 10), tienda.id, cupon.producto_id);
       return {
         estado: 201,
         datos: { codigo, creado_en: ahora, tienda: tienda.nombre, descuento_q: cupon.descuento_q, cobro_a_la_marca_q: cupon.costo_canje_q },

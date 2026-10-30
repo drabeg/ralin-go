@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RALIN Insights</title>
+  <link rel="icon" href="/icons/icono-192.png" type="image/png">
+  <link rel="stylesheet" href="/insights.css">
+</head>
+<body>
+  <header class="barra">
+    <div class="logo"><span class="logo-marca">R</span><span>RALIN <b>Insights</b></span></div>
+    <span class="barra-nota">Portal de datos para marcas · demo académica con datos ficticios</span>
+  </header>
+
+  <div class="contenedor">
+    <form class="filtros" id="filtros" aria-label="Filtros del reporte">
+      <label>Marca<select id="f-marca"></select></label>
+      <fieldset class="segmentado" aria-label="Período">
+        <input type="radio" name="dias" id="d7" value="7"><label for="d7">7 días</label>
+        <input type="radio" name="dias" id="d30" value="30" checked><label for="d30">30 días</label>
+      </fieldset>
+      <label>Tienda<select id="f-tienda"><option value="0">Todas las tiendas</option></select></label>
+      <span class="espaciador"></span>
+      <button type="button" class="boton claro" id="btn-csv">Exportar CSV</button>
+    </form>
+
+    <section class="encabezado">
+      <h1 id="titulo">Cargando…</h1>
+      <p class="hallazgo" id="hallazgo"></p>
+    </section>
+
+    <section class="kpis" id="kpis" aria-label="Indicadores principales"></section>
+
+    <section class="fila">
+      <article class="tarjeta ancha">
+        <div class="tarjeta-cabeza">
+          <h2>Ventas diarias y ventas perdidas por agotados</h2>
+          <div class="leyenda">
+            <span><i class="clave s1"></i>Ventas</span>
+            <span><i class="clave s2"></i>Ventas perdidas (estimadas)</span>
+          </div>
+        </div>
+        <div class="grafica" id="g-serie"></div>
+      </article>
+      <article class="tarjeta">
+        <div class="tarjeta-cabeza">
+          <h2>Disponibilidad en góndola por tienda</h2>
+          <p class="nota">% del horario con producto en el estante</p>
+        </div>
+        <div class="grafica" id="g-tiendas"></div>
+      </article>
+    </section>
+
+    <section class="tarjeta">
+      <div class="tarjeta-cabeza"><h2>Productos</h2><p class="nota" id="nota-productos"></p></div>
+      <div class="tabla-envoltura"><table id="t-productos"></table></div>
+    </section>
+
+    <section class="tarjeta">
+      <div class="tarjeta-cabeza">
+        <h2>En góndola ahora</h2>
+        <p class="nota"><span class="en-vivo">En vivo</span> <span id="nota-vivo"></span></p>
+      </div>
+      <div class="tabla-envoltura"><table id="t-vivo" class="vivo"></table></div>
+    </section>
+
+    <p class="pie">Ventas = unidades vendidas × precio de góndola. Ventas perdidas = demanda estimada durante el tiempo agotado. Disponibilidad = 1 − minutos agotado ÷ 840 minutos de tienda abierta.</p>
+  </div>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+  <script src="/insights.js"></script>
+</body>
+</html>

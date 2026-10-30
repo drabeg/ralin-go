@@ -58,6 +58,18 @@ CREATE TABLE IF NOT EXISTS lecturas (
 );
 CREATE INDEX IF NOT EXISTS idx_lecturas_fecha ON lecturas (creada_en);
 
+-- Resumen diario por góndola: base de los reportes de RALIN Insights
+CREATE TABLE IF NOT EXISTS ventas_diarias (
+  fecha               TEXT    NOT NULL,            -- AAAA-MM-DD
+  tienda_id           INTEGER NOT NULL REFERENCES tiendas(id),
+  producto_id         INTEGER NOT NULL REFERENCES productos(id),
+  unidades            INTEGER NOT NULL DEFAULT 0,  -- vendidas (bajas de peso en la góndola)
+  unidades_perdidas   REAL    NOT NULL DEFAULT 0,  -- estimadas: demanda durante el tiempo agotado
+  minutos_agotado     INTEGER NOT NULL DEFAULT 0,  -- de 840 minutos de tienda abierta
+  canjes              INTEGER NOT NULL DEFAULT 0,  -- cupones RALIN Go canjeados
+  PRIMARY KEY (fecha, tienda_id, producto_id)
+);
+
 -- Alertas de reabastecimiento (la góndola bajó del 15 %)
 CREATE TABLE IF NOT EXISTS alertas (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,

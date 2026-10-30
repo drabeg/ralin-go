@@ -46,3 +46,13 @@ test('una venta grande crea una alerta de reposición', () => {
   assert.strictEqual(r.unidades, 0);
   assert.ok(llamar('GET', '/api/alertas?abiertas=1&limite=50').some((a) => a.producto === 'Arroz blanco' && a.tienda.includes('El Salvador')));
 });
+
+test('Insights: la marca solo ve sus productos y la disponibilidad mejora frente al período anterior', () => {
+  const { crearRutasInsights } = require('../api/insights');
+  const [, [, patron, resumen]] = crearRutasInsights(db);
+  const r = resumen({ query: new URLSearchParams('marca=Brisa Clara&dias=30') });
+  assert.strictEqual(r.productos.length, 3);
+  assert.strictEqual(r.serie.length, 30);
+  assert.ok(r.actual.disponibilidad_pct > r.previo.disponibilidad_pct);
+  assert.ok(patron.test('/api/insights/resumen'));
+});

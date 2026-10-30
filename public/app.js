@@ -353,6 +353,7 @@
             <div>${esc(c.titulo)}<small>${esc(c.tienda)} · ${haceCuanto(c.creado_en)}</small></div><b>+${q(c.costo_canje_q)}</b></div>`).join('')
           : '<p class="sub">Todavía no hay canjes. ¡Escaneá el QR y usá un cupón!</p>'}</div>
         <a class="boton claro ancho" href="/presentar">Mostrar QR para la clase</a>
+        <a class="boton claro ancho" href="/insights">Abrir RALIN Insights (reportes para marcas)</a>
       </div>`;
     const refrescar = async () => {
       if (!$('#vista .panel')) return clearInterval(estado.temporizador);

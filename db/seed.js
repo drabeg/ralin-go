@@ -102,7 +102,7 @@ function sembrar(db) {
 
   db.exec('BEGIN');
   try {
-    for (const tabla of ['canjes', 'dispositivos', 'cupones', 'alertas', 'lecturas', 'inventario', 'productos', 'categorias', 'tiendas']) {
+    for (const tabla of ['ventas_diarias', 'canjes', 'dispositivos', 'cupones', 'alertas', 'lecturas', 'inventario', 'productos', 'categorias', 'tiendas']) {
       db.exec(`DELETE FROM ${tabla}`);
     }
     db.exec("DELETE FROM sqlite_sequence");
@@ -155,6 +155,8 @@ function sembrar(db) {
     const insCupon = db.prepare('INSERT INTO cupones (id, producto_id, titulo, descuento_q, vence_en) VALUES (?, ?, ?, ?, ?)');
     for (const c of CUPONES) insCupon.run(...c);
 
+    sembrarHistorial(db, azar);
+
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');
@@ -162,7 +164,46 @@ function sembrar(db) {
   }
 }
 
-module.exports = { sembrar, normalizar };
+
+// ---------- Historial de 60 días para RALIN Insights ----------
+// Demanda diaria base por tienda, según categoría (unidades por día)
+const DEMANDA_POR_CATEGORIA = { 1: 18, 2: 14, 3: 10, 4: 6, 5: 12, 6: 9, 7: 7, 8: 5 };
+const FACTOR_TIENDA = { 1: 0.9, 2: 1.0, 3: 1.1, 4: 1.25, 5: 1.2 };
+const FACTOR_DIA = [1.25, 0.9, 0.92, 0.95, 1.0, 1.1, 1.35]; // domingo a sábado
+const MINUTOS_ABIERTO = 840; // 14 horas
+const PRODUCTOS_CON_CUPON = new Set(CUPONES.map((c) => c[1]));
+
+function sembrarHistorial(db, azar) {
+  const ins = db.prepare(`INSERT INTO ventas_diarias
+    (fecha, tienda_id, producto_id, unidades, unidades_perdidas, minutos_agotado, canjes) VALUES (?, ?, ?, ?, ?, ?, ?)`);
+  const hoy = new Date();
+  const factorProducto = new Map(PRODUCTOS.map(([id]) => [id, 0.6 + azar() * 0.8]));
+  const riesgo = new Map();
+  for (const [t] of TIENDAS) for (const [p] of PRODUCTOS) riesgo.set(`${t}-${p}`, 0.02 + azar() * 0.1);
+  riesgo.set('1-18', 0.3); // el detergente se agota seguido en Zona 14 (storyboard)
+
+  for (let atras = 60; atras >= 1; atras--) {
+    const dia = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), hoy.getUTCDate() - atras));
+    const fecha = dia.toISOString().slice(0, 10);
+    const antesDeRalin = atras > 30; // los 30 días previos: sin alertas de reposición
+    for (const [t] of TIENDAS) {
+      for (const [p, , , , cat] of PRODUCTOS) {
+        const demanda = DEMANDA_POR_CATEGORIA[cat] * factorProducto.get(p) * FACTOR_TIENDA[t] *
+          FACTOR_DIA[dia.getUTCDay()] * (0.8 + azar() * 0.4);
+        let minutos = 0;
+        const prob = riesgo.get(`${t}-${p}`) * (antesDeRalin ? 1.8 : 1);
+        if (azar() < prob) minutos = Math.round(antesDeRalin ? 120 + azar() * 480 : 30 + azar() * 240);
+        const fraccion = minutos / MINUTOS_ABIERTO;
+        const unidades = Math.round(demanda * (1 - fraccion));
+        const perdidas = Math.round(demanda * fraccion * 10) / 10;
+        const canjes = PRODUCTOS_CON_CUPON.has(p) && atras <= 21 ? Math.round(unidades * (0.03 + azar() * 0.05)) : 0;
+        ins.run(fecha, t, p, unidades, perdidas, minutos, canjes);
+      }
+    }
+  }
+}
+
+module.exports = { sembrar, normalizar, MINUTOS_ABIERTO };
 
 // Ejecutado directamente: reinicia la base de datos
 if (require.main === module) {

@@ -1,6 +1,6 @@
 # RALIN Go · demo de la app
 
-App web instalable (PWA) que usa los datos de las estanterías inteligentes RALIN. Muestra **qué tienda tiene cada producto**, ofrece **cupones de las marcas** y tiene un **panel en vivo** para la presentación.
+App web instalable (PWA) que usa los datos de las estanterías inteligentes RALIN. Muestra **qué tienda tiene cada producto**, ofrece **cupones de las marcas** y tiene un **panel en vivo**. Incluye **RALIN Insights** (`/insights`), el dashboard de reportes que se vende a las marcas.
 Es una demo académica: marcas, tiendas y datos son ficticios.
 
 - **App móvil:** HTML, CSS y JavaScript sin frameworks. Se instala desde el navegador en Android y en iPhone.
@@ -11,12 +11,14 @@ Es una demo académica: marcas, tiendas y datos son ficticios.
 ```
 ralin-go/
 ├── server.js            servidor: API + archivos de la app
-├── api/rutas.js         endpoints de la API
+├── api/rutas.js         endpoints de la app
+├── api/insights.js      endpoints de los reportes para marcas
 ├── db/schema.sql        tablas y vista de disponibilidad
 ├── db/seed.js           datos iniciales (5 tiendas, 32 productos, 6 cupones)
 ├── lib/simulador.js     simulador de sensores de peso
 ├── lib/qr-svg.js        genera el código QR (lib/qr, licencia MIT)
 ├── public/              la app (index.html, app.js, styles.css, sw.js, manifest)
+│   ├── insights.html    dashboard RALIN Insights (insights.js, insights.css)
 │   └── presentar.html   pantalla con el QR grande para proyectar
 └── test/api.test.js     pruebas (npm test)
 ```
@@ -29,7 +31,7 @@ Requiere **Node.js 22.13 o superior** (`node -v`). No hace falta instalar paquet
 npm start
 ```
 
-Abrí http://localhost:3000. Para reiniciar los datos: `npm run seed`. Para correr las pruebas: `npm test`.
+Abrí http://localhost:3000 (app) y http://localhost:3000/insights (reportes). Para reiniciar los datos: `npm run seed`. Para correr las pruebas: `npm test`.
 
 ## 2. Publicarla gratis para que la abran con QR (unos 10 minutos)
 
@@ -71,6 +73,9 @@ Base: `/api`. Todas las respuestas son JSON. La cabecera opcional `X-Dispositivo
 | GET | `/api/metricas` | Números para el panel en vivo |
 | POST | `/api/simular/venta` | `{ "tienda_id": 1, "producto_id": 18, "unidades": 5 }` |
 | GET | `/api/qr.svg?texto=URL` | Código QR en SVG |
+| GET | `/api/insights/marcas` | Marcas disponibles |
+| GET | `/api/insights/resumen?marca=&dias=7\|30&tienda=` | KPIs, serie diaria, tiendas y productos vs. período anterior |
+| GET | `/api/insights/gondolas?marca=` | Estado actual de cada góndola de la marca |
 
 Ejemplo:
 
@@ -85,8 +90,23 @@ curl https://TU-DIRECCION.onrender.com/api/productos/18
 | `tiendas` | 5 sucursales (2 urbanas, 3 suburbanas) |
 | `categorias`, `productos` | 8 categorías, 32 productos con peso unitario |
 | `inventario` | Lectura actual de cada góndola: capacidad, unidades, precio, pasillo |
-| `lecturas` | Historial del sensor de peso (lo que vendería RALIN Insights) |
+| `lecturas` | Historial del sensor de peso |
+| `ventas_diarias` | Resumen diario por góndola: unidades, ventas perdidas estimadas, minutos agotado y canjes (60 días de historial) |
 | `alertas` | Avisos a bodega cuando la góndola baja del 15 % |
 | `cupones`, `canjes` | Cupones patrocinados y cada canje (Q2.50 para RALIN) |
 | `dispositivos` | Teléfonos anónimos que abrieron la app |
 | `v_disponibilidad` (vista) | Traduce unidades a *Hay / Quedan pocos / Agotado*: el consumidor nunca ve unidades exactas |
+
+## 5. RALIN Insights (reportes para marcas)
+
+Dashboard en `/insights`. Cada marca ve solo sus productos.
+
+- **Indicadores:** ventas, unidades, disponibilidad en góndola, ventas perdidas por agotados y cupones, comparados con el período anterior.
+- **Gráficas:** ventas diarias contra ventas perdidas, con detalle al pasar el mouse, y disponibilidad por tienda frente a la meta del 98 %.
+- **Tabla de productos:** se puede exportar a CSV.
+- **En góndola ahora:** nivel de cada frente en cada tienda, actualizado cada 5 segundos.
+
+Cómo se calcula:
+- **Disponibilidad** = 1 − minutos agotado ÷ 840 minutos de tienda abierta.
+- **Ventas perdidas** = demanda estimada durante el tiempo agotado × precio de góndola.
+- **Historial:** son 60 días generados por `db/seed.js`. Los 30 días anteriores simulan el período antes de instalar RALIN.
