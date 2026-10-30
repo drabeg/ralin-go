@@ -1,123 +1,229 @@
-# RALIN Go · demo de la app
+<p align="center">
+  <img src="public/icons/icono-192.png" alt="Ícono de RALIN Go" width="96">
+</p>
 
-App web instalable (PWA) que usa los datos de las estanterías inteligentes RALIN. Muestra **qué tienda tiene cada producto**, ofrece **cupones de las marcas** y tiene un **panel en vivo**. Incluye **RALIN Insights** (`/insights`), el dashboard de reportes que se vende a las marcas.
-Es una demo académica: marcas, tiendas y datos son ficticios.
+<h1 align="center">RALIN Go</h1>
 
-- **App móvil:** HTML, CSS y JavaScript sin frameworks. Se instala desde el navegador en Android y en iPhone.
-- **API REST:** Node.js con el módulo `http`, sin dependencias externas.
-- **Base de datos:** SQLite (módulo `node:sqlite`, incluido en Node.js 22).
-- **Simulador de sensores:** cada 8 segundos "vende" productos al azar. Si una góndola baja del 15 % se crea una alerta, y 45 segundos después bodega la repone.
+<p align="center">
+  Disponibilidad de productos en tiempo real, cupones de marcas y reportes de góndola.<br>
+  Prototipo funcional del ecosistema de estanterías inteligentes RALIN.
+</p>
+
+<p align="center">
+  <a href="https://github.com/drabeg/ralin-go/actions/workflows/pruebas.yml"><img src="https://github.com/drabeg/ralin-go/actions/workflows/pruebas.yml/badge.svg" alt="Pruebas"></a>
+  <img src="https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white" alt="Node.js 22+">
+  <img src="https://img.shields.io/badge/SQLite-node%3Asqlite-003B57?logo=sqlite&logoColor=white" alt="SQLite">
+  <img src="https://img.shields.io/badge/PWA-instalable-5A0FC8?logo=pwa&logoColor=white" alt="PWA">
+  <img src="https://img.shields.io/badge/dependencias-0-success" alt="Sin dependencias">
+  <img src="https://img.shields.io/badge/licencia-MIT-blue" alt="Licencia MIT">
+</p>
+
+<p align="center">
+  <img src="docs/capturas/app-inicio.png" alt="Pantalla de inicio" width="200">
+  <img src="docs/capturas/app-producto.png" alt="Disponibilidad por tienda" width="200">
+  <img src="docs/capturas/app-cupon.png" alt="Cupón canjeado" width="200">
+  <img src="docs/capturas/app-panel.png" alt="Panel en vivo" width="200">
+</p>
+
+---
+
+## Contenido
+
+- [Descripción](#descripción)
+- [Características](#características)
+- [Arquitectura](#arquitectura)
+- [Instalación local](#instalación-local)
+- [Despliegue en Render](#despliegue-en-render)
+- [RALIN Insights](#ralin-insights)
+- [API](#api)
+- [Base de datos](#base-de-datos)
+- [Pruebas](#pruebas)
+- [Contexto académico](#contexto-académico)
+- [Licencia](#licencia)
+
+## Descripción
+
+RALIN propone estanterías con sensores de peso y etiquetas electrónicas que miden en tiempo real cuánto producto queda en cada góndola. Ese mismo dato se aprovecha de tres formas:
+
+| Cliente | Producto | En este repositorio |
+| --- | --- | --- |
+| Supermercado | Alertas de reposición y precios sincronizados | Simulador de sensores y alertas |
+| Marcas | **RALIN Insights**: reportes de ventas, disponibilidad y quiebres | Dashboard en `/insights` |
+| Consumidor | **RALIN Go**: qué tienda tiene el producto, con cupones | App web instalable |
+
+> **Nota:** las marcas, tiendas, precios e historial son ficticios y se generan al iniciar el servidor.
+
+## Características
+
+**App RALIN Go (PWA)**
+- Búsqueda por producto, marca o categoría, sin importar las tildes.
+- Estado por tienda (*Hay / Quedan pocos / Agotado*) con la hora de la última lectura del sensor, actualizado cada 8 s. Nunca muestra unidades exactas.
+- Cupones patrocinados por marcas, con código de canje y un solo canje por dispositivo.
+- Lista de compras que recomienda la tienda donde se encuentran más productos.
+- Panel en vivo con usuarios, canjes, facturación a marcas y alertas de reposición.
+- Instalable en Android e iOS. Funciona sin conexión gracias al *service worker*.
+
+**RALIN Insights**
+- Indicadores de ventas, unidades, disponibilidad, ventas perdidas y cupones, comparados con el período anterior.
+- Serie diaria de ventas contra ventas perdidas, y disponibilidad por tienda frente a una meta.
+- Tabla de productos exportable a CSV y vista en vivo del nivel de cada góndola.
+
+**Backend**
+- API REST con Node.js (`node:http`) y base de datos SQLite (`node:sqlite`), sin dependencias externas.
+- Simulador de sensores: genera ventas, crea alertas cuando una góndola baja del 15 % y simula la reposición.
+
+## Arquitectura
+
+```mermaid
+flowchart LR
+  S["Simulador de sensores<br/>(lib/simulador.js)"] --> DB[("SQLite")]
+  DB --> API["API REST<br/>(api/)"]
+  API --> APP["RALIN Go<br/>PWA móvil"]
+  API --> INS["RALIN Insights<br/>dashboard"]
+  APP -- canje de cupón --> API
+```
 
 ```
 ralin-go/
-├── server.js            servidor: API + archivos de la app
-├── api/rutas.js         endpoints de la app
-├── api/insights.js      endpoints de los reportes para marcas
-├── db/schema.sql        tablas y vista de disponibilidad
-├── db/seed.js           datos iniciales (5 tiendas, 32 productos, 6 cupones)
-├── lib/simulador.js     simulador de sensores de peso
-├── lib/qr-svg.js        genera el código QR (lib/qr, licencia MIT)
-├── public/              la app (index.html, app.js, styles.css, sw.js, manifest)
-│   ├── insights.html    dashboard RALIN Insights (insights.js, insights.css)
-│   └── presentar.html   pantalla con el QR grande para proyectar
-└── test/api.test.js     pruebas (npm test)
+├── server.js              servidor HTTP: API + archivos estáticos
+├── api/
+│   ├── rutas.js           endpoints de la app
+│   └── insights.js        endpoints de reportes para marcas
+├── db/
+│   ├── schema.sql         tablas, índices y vista de disponibilidad
+│   ├── database.js        conexión e inicialización
+│   └── seed.js            datos de demostración e historial de 60 días
+├── lib/
+│   ├── simulador.js       simulador de sensores de peso
+│   ├── qr-svg.js          generador de códigos QR en SVG
+│   └── qr/                codificador QR (MIT, Kazuhiko Arase)
+├── public/
+│   ├── index.html         app RALIN Go (app.js, styles.css)
+│   ├── insights.html      dashboard (insights.js, insights.css)
+│   ├── presentar.html     pantalla con código QR para compartir la app
+│   └── manifest.webmanifest, sw.js, icons/
+├── test/api.test.js       pruebas automatizadas
+├── docs/capturas/         imágenes del README
+└── render.yaml            configuración de despliegue
 ```
 
-## 1. Probarla en tu computadora
+## Instalación local
 
-Requiere **Node.js 22.13 o superior** (`node -v`). No hace falta instalar paquetes.
+**Requisito:** Node.js 22.13 o superior (`node -v`). No hay que instalar paquetes.
 
 ```bash
+git clone https://github.com/drabeg/ralin-go.git
+cd ralin-go
 npm start
 ```
 
-Abrí http://localhost:3000 (app) y http://localhost:3000/insights (reportes). Para reiniciar los datos: `npm run seed`. Para correr las pruebas: `npm test`.
+| Dirección | Contenido |
+| --- | --- |
+| http://localhost:3000 | App RALIN Go |
+| http://localhost:3000/insights | Dashboard RALIN Insights |
+| http://localhost:3000/presentar | Código QR de la app y contadores en vivo |
+| http://localhost:3000/api | Lista de endpoints |
 
-## 2. Publicarla gratis para que la abran con QR (unos 10 minutos)
+| Comando | Acción |
+| --- | --- |
+| `npm start` | Inicia el servidor (puerto `PORT`, por defecto 3000) |
+| `npm run seed` | Reinicia la base de datos con los datos de demostración |
+| `npm test` | Ejecuta las pruebas |
 
-El celular de tus compañeros necesita una dirección pública con HTTPS. Render la da gratis.
+Variables de entorno opcionales: `PORT`, `DB_PATH` (ruta del archivo SQLite) y `SIMULADOR=apagado`.
 
-1. **Subí el proyecto a GitHub.** Creá un repositorio nuevo (por ejemplo `ralin-go`) y subí esta carpeta tal cual. Desde la web sirve *Add file → Upload files*: arrastrá todo el contenido de la carpeta.
-2. **Creá una cuenta en [render.com](https://render.com)** con tu GitHub.
-3. **New → Web Service** y elegí el repositorio. Configurá:
-   - Runtime: **Node**
-   - Build command: `npm install`
-   - Start command: `npm start`
-   - Plan: **Free**
-   - En *Environment*, agregá `NODE_VERSION` = `22`
+## Despliegue en Render
 
-   (Otra opción: **New → Blueprint**, que lee `render.yaml` y llena todo solo.)
-4. Esperá a que diga **Live**. Te da una dirección como `https://ralin-go.onrender.com`.
-5. Abrí `https://TU-DIRECCION.onrender.com/presentar`. Esa pantalla muestra el **QR grande** y los contadores en vivo.
-6. El dashboard de reportes queda en la misma dirección: `https://TU-DIRECCION.onrender.com/insights`. No hay que publicarlo aparte.
+Para abrir la app desde un teléfono y poder instalarla, el servidor debe estar publicado en internet con HTTPS. Render ofrece ambas cosas en su plan gratuito.
 
-### Cómo se instala en el teléfono
-- **Android (Chrome):** al abrirla aparece el botón *Instalar* en el inicio de la app, o desde el menú ⋮ → *Instalar app*.
-- **iPhone (Safari):** botón *Compartir* → *Agregar a inicio*.
+1. Subí el repositorio a GitHub.
+2. En [render.com](https://render.com), elegí **New → Blueprint** y seleccioná el repositorio. Render lee `render.yaml` y configura el servicio.
+   - Si preferís hacerlo a mano, elegí **New → Web Service** con Runtime **Node**, build `npm install`, start `npm start`, plan **Free** y la variable `NODE_VERSION=22`.
+3. Cuando el servicio diga **Live**, quedan disponibles:
+   - App: `https://TU-SERVICIO.onrender.com`
+   - Dashboard: `https://TU-SERVICIO.onrender.com/insights`
+   - Código QR para compartir: `https://TU-SERVICIO.onrender.com/presentar`
 
-## 3. API
+Cada `git push` a `main` vuelve a publicar el servicio automáticamente.
 
-Base: `/api`. Todas las respuestas son JSON. La cabecera opcional `X-Dispositivo` identifica al teléfono de forma anónima.
+**Consideraciones del plan gratuito:**
+- El servicio se suspende tras 15 minutos sin tráfico, y la siguiente visita tarda cerca de un minuto en reactivarlo.
+- El disco no es persistente: la base de datos se regenera en cada reinicio.
 
-| Método | Ruta | Qué hace |
+**Instalar la app en el teléfono:**
+- **Android (Chrome):** botón *Instalar* en la pantalla de inicio de la app, o menú ⋮ → *Instalar app*.
+- **iPhone (Safari):** *Compartir* → *Agregar a inicio*.
+
+## RALIN Insights
+
+<p align="center"><img src="docs/capturas/insights.png" alt="Dashboard RALIN Insights" width="900"></p>
+
+El dashboard lo sirve el mismo servidor que la app: no se instala aparte. Cada marca ve solo sus productos.
+
+**Cómo se calculan los indicadores:**
+
+| Indicador | Cálculo |
+| --- | --- |
+| Ventas | unidades vendidas × precio de góndola |
+| Disponibilidad | 1 − minutos agotado ÷ 840 minutos de tienda abierta |
+| Ventas perdidas | demanda estimada durante el tiempo agotado × precio |
+
+El historial abarca 60 días. Los 30 días anteriores al período actual representan la operación antes de instalar RALIN, para poder comparar.
+
+## API
+
+Base: `/api`. Las respuestas son JSON. La cabecera opcional `X-Dispositivo` identifica al dispositivo de forma anónima.
+
+| Método | Ruta | Descripción |
 | --- | --- | --- |
-| GET | `/api` | Lista de endpoints |
 | GET | `/api/salud` | Estado del servidor |
-| GET | `/api/tiendas` | Tiendas con conteo de productos con stock, con pocos y agotados |
+| GET | `/api/tiendas` | Tiendas con conteo de productos disponibles, con poco stock y agotados |
 | GET | `/api/categorias` | Categorías |
-| GET | `/api/productos?q=&categoria=&tienda=` | Búsqueda (ignora tildes) con el estado en tu tienda |
-| GET | `/api/productos/:id` | Detalle y disponibilidad en cada tienda |
-| GET | `/api/disponibilidad?productos=1,2,3` | Qué tienda tiene más productos de tu lista |
-| GET | `/api/cupones` | Cupones activos, marcados si ya los canjeaste |
-| POST | `/api/cupones/:id/canjear` | `{ "tienda_id": 1 }` → genera el código (uno por teléfono) |
+| GET | `/api/productos?q=&categoria=&tienda=` | Búsqueda con estado en la tienda seleccionada |
+| GET | `/api/productos/:id` | Detalle y disponibilidad por tienda |
+| GET | `/api/disponibilidad?productos=1,2,3` | Tiendas ordenadas por cobertura de una lista |
+| GET | `/api/cupones` | Cupones activos y canjes del dispositivo |
+| POST | `/api/cupones/:id/canjear` | Canjea un cupón: `{ "tienda_id": 1 }` |
 | GET | `/api/alertas?abiertas=1&limite=10` | Alertas de reposición |
-| GET | `/api/metricas` | Números para el panel en vivo |
-| POST | `/api/simular/venta` | `{ "tienda_id": 1, "producto_id": 18, "unidades": 5 }` |
+| GET | `/api/metricas` | Métricas del panel en vivo |
+| POST | `/api/simular/venta` | Simula una venta: `{ "tienda_id": 1, "producto_id": 18, "unidades": 5 }` |
 | GET | `/api/qr.svg?texto=URL` | Código QR en SVG |
 | GET | `/api/insights/marcas` | Marcas disponibles |
-| GET | `/api/insights/resumen?marca=&dias=7\|30&tienda=` | KPIs, serie diaria, tiendas y productos vs. período anterior |
-| GET | `/api/insights/gondolas?marca=` | Estado actual de cada góndola de la marca |
-
-Ejemplo:
+| GET | `/api/insights/resumen?marca=&dias=7\|30&tienda=` | Indicadores, serie diaria, tiendas y productos |
+| GET | `/api/insights/gondolas?marca=` | Nivel actual de cada góndola de la marca |
 
 ```bash
-curl https://TU-DIRECCION.onrender.com/api/productos/18
+curl http://localhost:3000/api/productos/18
 ```
 
-## 4. Base de datos
+## Base de datos
 
 | Tabla | Contenido |
 | --- | --- |
-| `tiendas` | 5 sucursales (2 urbanas, 3 suburbanas) |
-| `categorias`, `productos` | 8 categorías, 32 productos con peso unitario |
-| `inventario` | Lectura actual de cada góndola: capacidad, unidades, precio, pasillo |
-| `lecturas` | Historial del sensor de peso |
-| `ventas_diarias` | Resumen diario por góndola: unidades, ventas perdidas estimadas, minutos agotado y canjes (60 días de historial) |
-| `alertas` | Avisos a bodega cuando la góndola baja del 15 % |
-| `cupones`, `canjes` | Cupones patrocinados y cada canje (Q2.50 para RALIN) |
-| `dispositivos` | Teléfonos anónimos que abrieron la app |
-| `v_disponibilidad` (vista) | Traduce unidades a *Hay / Quedan pocos / Agotado*: el consumidor nunca ve unidades exactas |
+| `tiendas` | 5 sucursales (urbanas y suburbanas) |
+| `categorias`, `productos` | 8 categorías y 32 productos con peso unitario |
+| `inventario` | Lectura actual de cada góndola: capacidad, unidades, precio y pasillo |
+| `lecturas` | Historial de lecturas del sensor de peso |
+| `ventas_diarias` | Resumen diario por góndola: unidades, ventas perdidas, minutos agotado y canjes |
+| `alertas` | Avisos de reposición cuando la góndola baja del 15 % |
+| `cupones`, `canjes` | Cupones patrocinados y su historial de canje |
+| `dispositivos` | Identificadores anónimos de los dispositivos que usan la app |
+| `v_disponibilidad` (vista) | Convierte unidades en *Hay / Quedan pocos / Agotado* |
 
-## 5. RALIN Insights (reportes para marcas)
+## Pruebas
 
-Dashboard en `/insights`. Cada marca ve solo sus productos.
+```bash
+npm test
+```
 
-### Cómo abrirlo
+Las pruebas usan el ejecutor nativo de Node.js (`node:test`) con una base en memoria, y corren en GitHub Actions en cada `push`.
 
-No se instala aparte: lo sirve el mismo servidor que la app, con la misma API y la misma base de datos.
+## Contexto académico
 
-- **En tu computadora:** `npm start` y abrí http://localhost:3000/insights
-- **En Render:** después del `git push`, Render vuelve a publicar solo y queda en `https://TU-DIRECCION.onrender.com/insights`
-- **Desde la app:** *Panel en vivo de RALIN* → *Abrir RALIN Insights*
+Proyecto final del curso de **Microeconomía**, Ingeniería en Sistemas, Universidad Mariano Gálvez de Guatemala, 2026.
 
-Está pensado para pantalla de computadora; en el celular se acomoda, pero se aprovecha mejor en una laptop o un monitor.
+**Equipo:** Darío Rabe · Richard Pernillo · Libbny Medrano · Holcen Ajín · Cristian Cano
 
-- **Indicadores:** ventas, unidades, disponibilidad en góndola, ventas perdidas por agotados y cupones, comparados con el período anterior.
-- **Gráficas:** ventas diarias contra ventas perdidas, con detalle al pasar el mouse, y disponibilidad por tienda frente a la meta del 98 %.
-- **Tabla de productos:** se puede exportar a CSV.
-- **En góndola ahora:** nivel de cada frente en cada tienda, actualizado cada 5 segundos.
+## Licencia
 
-Cómo se calcula:
-- **Disponibilidad** = 1 − minutos agotado ÷ 840 minutos de tienda abierta.
-- **Ventas perdidas** = demanda estimada durante el tiempo agotado × precio de góndola.
-- **Historial:** son 60 días generados por `db/seed.js`. Los 30 días anteriores simulan el período antes de instalar RALIN.
+Distribuido bajo la licencia [MIT](LICENSE). El codificador QR en `lib/qr/` es de Kazuhiko Arase, también bajo licencia MIT.
