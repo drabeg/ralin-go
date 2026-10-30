@@ -109,6 +109,22 @@ CREATE TABLE IF NOT EXISTS canjes (
   UNIQUE (cupon_id, dispositivo_id)                -- un canje por cupón y teléfono
 );
 
+-- Guías en el pasillo ("Shop to Light"): la app pide que parpadee el LED de la ESL
+CREATE TABLE IF NOT EXISTS guias (
+  id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+  dispositivo_id       TEXT    NOT NULL,
+  tienda_id            INTEGER NOT NULL REFERENCES tiendas(id),
+  producto_id          INTEGER NOT NULL REFERENCES productos(id),
+  etiqueta             TEXT    NOT NULL,            -- identificador de la ESL
+  color                TEXT    NOT NULL,            -- color del LED asignado a este cliente
+  latencia_gateway_ms  INTEGER NOT NULL,            -- nube → gateway → ESL
+  latencia_app_ms      INTEGER,                     -- medida en el teléfono, de punta a punta
+  creada_en            TEXT    NOT NULL,
+  expira_en            TEXT    NOT NULL,            -- fin del parpadeo
+  encontrada_en        TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_guias_tienda ON guias (tienda_id, expira_en);
+
 -- Disponibilidad que ve el consumidor: nunca unidades exactas, solo el estado
 CREATE VIEW IF NOT EXISTS v_disponibilidad AS
 SELECT

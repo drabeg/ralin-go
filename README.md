@@ -58,6 +58,7 @@ RALIN propone estanterías con sensores de peso y etiquetas electrónicas que mi
 **App RALIN Go (PWA)**
 - Búsqueda por producto, marca o categoría, sin importar las tildes.
 - Estado por tienda (*Hay / Quedan pocos / Agotado*) con la hora de la última lectura del sensor, actualizado cada 8 s. Nunca muestra unidades exactas.
+- **Guía en el pasillo** (*shop to light*): desde el detalle de un producto, la app hace parpadear el LED de su etiqueta electrónica en un color asignado a cada cliente y mide la latencia de punta a punta (meta: menos de 2 s).
 - Cupones patrocinados por marcas, con código de canje y un solo canje por dispositivo.
 - Lista de compras que recomienda la tienda donde se encuentran más productos.
 - Panel en vivo con usuarios, canjes, facturación a marcas y alertas de reposición.
@@ -96,6 +97,7 @@ ralin-go/
 │   └── seed.js            datos de demostración e historial de 60 días
 ├── lib/
 │   ├── simulador.js       simulador de sensores de peso
+│   ├── gateway.js         simulador del gateway de tienda (guía en el pasillo)
 │   ├── qr-svg.js          generador de códigos QR en SVG
 │   └── qr/                codificador QR (MIT, Kazuhiko Arase)
 ├── public/
@@ -191,6 +193,9 @@ Base: `/api`. Las respuestas son JSON. La cabecera opcional `X-Dispositivo` iden
 | GET | `/api/alertas?abiertas=1&limite=10` | Alertas de reposición |
 | GET | `/api/metricas` | Métricas del panel en vivo |
 | POST | `/api/simular/venta` | Simula una venta: `{ "tienda_id": 1, "producto_id": 18, "unidades": 5 }` |
+| POST | `/api/guia` | Hace parpadear la etiqueta ESL de un producto: `{ "tienda_id": 2, "producto_id": 18 }` |
+| POST | `/api/guia/:id/latencia` | Registra la latencia medida en el teléfono: `{ "ms": 840 }` |
+| POST | `/api/guia/:id/encontrada` | Marca que el cliente encontró el producto |
 | GET | `/api/qr.svg?texto=URL` | Código QR en SVG |
 | GET | `/api/insights/marcas` | Marcas disponibles |
 | GET | `/api/insights/resumen?marca=&dias=7\|30&tienda=` | Indicadores, serie diaria, tiendas y productos |
@@ -211,6 +216,7 @@ curl http://localhost:3000/api/productos/18
 | `ventas_diarias` | Resumen diario por góndola: unidades, ventas perdidas, minutos agotado y canjes |
 | `alertas` | Avisos de reposición cuando la góndola baja del 15 % |
 | `cupones`, `canjes` | Cupones patrocinados y su historial de canje |
+| `guias` | Cada guía al pasillo: etiqueta, color del LED y latencia del gateway y de la app |
 | `dispositivos` | Identificadores anónimos de los dispositivos que usan la app |
 | `v_disponibilidad` (vista) | Convierte unidades en *Hay / Quedan pocos / Agotado* |
 

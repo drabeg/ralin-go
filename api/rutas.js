@@ -5,6 +5,7 @@
 const crypto = require('node:crypto');
 const { normalizar } = require('../db/seed');
 const { svgDeQR } = require('../lib/qr-svg');
+const { crearGateway, META_MS } = require('../lib/gateway');
 
 class ErrorApi extends Error {
   constructor(estado, mensaje) { super(mensaje); this.estado = estado; }
@@ -15,7 +16,8 @@ const entero = (valor) => {
   return Number.isSafeInteger(n) && n > 0 ? n : 0;
 };
 
-function crearRutas(db, simulador) {
+function crearRutas(db, simulador, { demoraGateway = true } = {}) {
+  const gateway = crearGateway(db, { demora: demoraGateway });
   const sql = {
     tiendas: db.prepare(`
       SELECT t.*,
@@ -85,7 +87,9 @@ function crearRutas(db, simulador) {
         (SELECT COUNT(*) FROM alertas WHERE atendida_en IS NULL)                 AS alertas_abiertas,
         (SELECT COUNT(*) FROM alertas WHERE atendida_en IS NOT NULL)             AS alertas_atendidas,
         (SELECT COUNT(*) FROM lecturas WHERE creada_en >= ?)                     AS lecturas_ultima_hora,
-        (SELECT COUNT(*) FROM inventario)                                        AS gondolas_monitoreadas`),
+        (SELECT COUNT(*) FROM inventario)                                        AS gondolas_monitoreadas,
+        (SELECT COUNT(*) FROM guias WHERE creada_en >= ?)                        AS guias_hoy`),
+    latencias: db.prepare('SELECT COALESCE(latencia_app_ms, latencia_gateway_ms) AS ms FROM guias WHERE creada_en >= ? ORDER BY ms'),
     ultimosCanjes: db.prepare(`
       SELECT ca.creado_en, cu.titulo, cu.costo_canje_q, t.nombre AS tienda, p.imagen
       FROM canjes ca JOIN cupones cu ON cu.id = ca.cupon_id
@@ -124,6 +128,9 @@ function crearRutas(db, simulador) {
         'GET  /api/alertas?abiertas=1&limite=10',
         'GET  /api/metricas',
         'POST /api/simular/venta           { "tienda_id": 1, "producto_id": 18, "unidades": 3 }',
+        'POST /api/guia                    { "tienda_id": 2, "producto_id": 18 }  (cabecera X-Dispositivo)',
+        'POST /api/guia/:id/latencia       { "ms": 840 }',
+        'POST /api/guia/:id/encontrada',
         'GET  /api/qr.svg?texto=https://...',
         'GET  /api/insights/marcas',
         'GET  /api/insights/resumen?marca=Brisa Clara&dias=30&tienda=ID',
@@ -202,12 +209,38 @@ function crearRutas(db, simulador) {
       return sql.alertas.all(query.get('abiertas') === '1' ? 1 : 0, limite);
     }],
 
-    ['GET', /^\/api\/metricas$/, () => ({
-      ...sql.metricas.get(hace(24 * 3600e3), hace(5 * 60e3), hace(3600e3)),
-      ultimos_canjes: sql.ultimosCanjes.all(),
-      ultimas_alertas: sql.alertas.all(0, 6),
-      hora: new Date().toISOString(),
-    })],
+    ['GET', /^\/api\/metricas$/, () => {
+      const desdeHoy = hace(24 * 3600e3);
+      const latencias = sql.latencias.all(desdeHoy).map((f) => f.ms);
+      const p95 = latencias.length ? latencias[Math.min(latencias.length - 1, Math.ceil(latencias.length * 0.95) - 1)] : null;
+      return {
+        ...sql.metricas.get(desdeHoy, hace(5 * 60e3), hace(3600e3), desdeHoy),
+        latencia_guia_p95_ms: p95,
+        guias_dentro_de_meta_pct: latencias.length ? Math.round((100 * latencias.filter((ms) => ms < META_MS).length) / latencias.length) : null,
+        ultimos_canjes: sql.ultimosCanjes.all(),
+        ultimas_alertas: sql.alertas.all(0, 6),
+        hora: new Date().toISOString(),
+      };
+    }],
+
+    // Guía en el pasillo: hace parpadear el LED de la etiqueta ESL del producto
+    ['POST', /^\/api\/guia$/, async ({ cuerpo, dispositivo }) => {
+      if (!dispositivo) throw new ErrorApi(400, 'Falta la cabecera X-Dispositivo');
+      const tiendaId = entero(cuerpo.tienda_id); const productoId = entero(cuerpo.producto_id);
+      if (!tiendaId || !productoId) throw new ErrorApi(400, 'Indicá tienda_id y producto_id');
+      const r = await gateway.guiar({ tiendaId, productoId, dispositivo });
+      if (r.error) throw new ErrorApi(409, r.error);
+      return { estado: 201, datos: r };
+    }],
+    ['POST', /^\/api\/guia\/(\d+)\/latencia$/, ({ params, cuerpo, dispositivo }) => {
+      const ms = Math.round(Number(cuerpo.ms));
+      if (!dispositivo || !Number.isFinite(ms) || ms < 0 || ms > 60000) throw new ErrorApi(400, 'Latencia no válida');
+      return { registrada: gateway.registrarLatenciaApp(entero(params[0]), dispositivo, ms) };
+    }],
+    ['POST', /^\/api\/guia\/(\d+)\/encontrada$/, ({ params, dispositivo }) => {
+      if (!dispositivo) throw new ErrorApi(400, 'Falta la cabecera X-Dispositivo');
+      return { encontrada: gateway.marcarEncontrada(entero(params[0]), dispositivo) };
+    }],
 
     // Simula que un cliente saca producto de la góndola (para demostrar las alertas en vivo)
     ['POST', /^\/api\/simular\/venta$/, ({ cuerpo }) => {

@@ -105,6 +105,7 @@
     buscar: `<svg viewBox="0 0 48 48" aria-hidden="true"><circle ${TRAZO} cx="21" cy="21" r="12"/><path ${TRAZO} d="M30 30l10 10M16 21h10"/></svg>`,
     lista: `<svg viewBox="0 0 48 48" aria-hidden="true"><rect ${TRAZO} x="10" y="6" width="28" height="36" rx="4"/><path ${TRAZO} d="M17 17h14M17 24h14M17 31h8"/></svg>`,
     senal: `<svg viewBox="0 0 48 48" aria-hidden="true"><path ${TRAZO} d="M8 18a24 24 0 0 1 32 0M14 25a15 15 0 0 1 20 0M20 32a6 6 0 0 1 8 0M8 8l32 32"/></svg>`,
+    luz: `<svg viewBox="0 0 48 48" aria-hidden="true"><rect ${TRAZO} x="10" y="22" width="28" height="16" rx="3"/><path ${TRAZO} d="M16 30h10M24 6v5M12 10l3 4M36 10l-3 4M8 18h4M36 18h4"/><circle cx="33" cy="30" r="2.5" fill="currentColor"/></svg>`,
     etiqueta: `<svg viewBox="0 0 48 48" aria-hidden="true"><path ${TRAZO} d="M6 24V8h16l20 20-14 14z"/><circle ${TRAZO} cx="15" cy="17" r="3"/><path ${TRAZO} d="M22 30l8-8"/></svg>`,
   };
 
@@ -263,6 +264,18 @@
       return [...mia.map((d) => filaTienda(d, true)), ...resto.map((d) => filaTienda(d, false))].join('');
     };
     const conStock = p.disponibilidad.filter((d) => d.estado !== 'agotado').length;
+    const enMiTienda = p.disponibilidad.find((d) => d.tienda_id === estado.tiendaId);
+    const otraConStock = p.disponibilidad.find((d) => d.tienda_id !== estado.tiendaId && d.estado !== 'agotado');
+    let bloqueGuia = '';
+    if (enMiTienda && enMiTienda.estado !== 'agotado') {
+      bloqueGuia = `<div class="guia-cta"><span class="guia-icono">${ICONOS.luz}</span>
+        <p><b>¿Ya estás en ${esc(enMiTienda.tienda)}?</b><br>Hacé parpadear su etiqueta para encontrarlo en ${esc(enMiTienda.pasillo)}.</p>
+        <button class="boton chico" type="button" data-guiar="${p.id}" data-tienda="${enMiTienda.tienda_id}">Guiarme</button></div>`;
+    } else if (otraConStock) {
+      bloqueGuia = `<div class="guia-cta"><span class="guia-icono">${ICONOS.luz}</span>
+        <p><b>Agotado en tu tienda</b><br>Hay en ${esc(otraConStock.tienda)}. Si estás allá, te guiamos al producto.</p>
+        <button class="boton chico claro" type="button" data-guiar="${p.id}" data-tienda="${otraConStock.tienda_id}">Guiarme allá</button></div>`;
+    }
     if (!pintar(`
       <a class="volver" href="#/buscar" data-volver>‹ Volver</a>
       <div class="detalle-cabecera">
@@ -272,6 +285,7 @@
       ${p.cupon ? `<div class="cupon-destacado"><span class="icono-cupon">${ICONOS.etiqueta}</span>
         <p><b>${qCorto(p.cupon.descuento_q)} de descuento</b><br>Cupón de la marca, vence el ${fecha(p.cupon.vence_en)}</p>
         <button class="boton chico ambar" type="button" data-cupon="${p.cupon.id}">Usar</button></div>` : ''}
+      ${bloqueGuia}
       <section class="seccion">
         <div class="seccion-titulo"><h2>Disponibilidad por tienda</h2><span class="en-vivo">En vivo</span></div>
         <p class="meta" style="color:var(--gris);font-size:14px;margin:-4px 0 12px">Hay producto en ${conStock} de ${p.disponibilidad.length} tiendas, según los sensores de las góndolas.</p>
@@ -352,6 +366,8 @@
           <div class="kpi"><b>${m.cupones_canjeados}</b><span>cupones canjeados</span></div>
           <div class="kpi destacado"><b>${q(m.facturado_marcas_q)}</b><span>facturado a marcas (Q2.50 por canje)</span></div>
           <div class="kpi"><b>${m.alertas_abiertas}</b><span>alertas de reposición abiertas</span></div>
+          <div class="kpi"><b>${m.guias_hoy}</b><span>guías al pasillo (etiqueta ESL)</span></div>
+          <div class="kpi"><b>${m.latencia_guia_p95_ms === null ? '–' : (m.latencia_guia_p95_ms / 1000).toFixed(2) + ' s'}</b><span>latencia p95 del buscador · meta &lt; 2 s</span></div>
         </div>
         <button class="boton ambar ancho" type="button" id="btn-simular">Simular venta en ${esc((tiendaActual() || {}).nombre || 'la tienda')}</button>
         <div class="feed"><h2>Alertas de góndola</h2>${m.ultimas_alertas.map((a) => `
@@ -372,6 +388,79 @@
     const pintarPanel = (html) => { const v = $('#vista'); if (v.firstElementChild && v.firstElementChild.classList.contains('panel')) v.innerHTML = html; };
     if (!pintar(dibujar(await api('/api/metricas')))) return;
     estado.temporizador = setInterval(refrescar, 4000);
+  }
+
+  // ---------- guía en el pasillo ("Shop to Light") ----------
+  // Dibujo de la góndola: 3 estantes × 6 secciones, cada uno con su etiqueta ESL
+  function dibujoGondola(g) {
+    const niveles = ['superior', 'medio', 'inferior'];
+    const fila = niveles.indexOf(g.nivel);
+    let s = '<svg class="gondola" viewBox="0 0 320 190" aria-hidden="true"><rect x="4" y="4" width="312" height="182" rx="10" fill="#E9E4D8"/>';
+    for (let f = 0; f < 3; f++) {
+      const y = 16 + f * 58;
+      s += `<rect x="12" y="${y + 40}" width="296" height="6" rx="2" fill="#C9C1AE"/>`;
+      for (let c = 0; c < 6; c++) {
+        const x = 16 + c * 49;
+        const objetivo = f === fila && c === g.seccion - 1;
+        if (!objetivo) s += `<rect x="${x + 6}" y="${y + 8 + ((c + f) % 3) * 3}" width="30" height="${30 - ((c + f) % 3) * 3}" rx="4" fill="#CFC6B2"/>`;
+        else s += `<image href="${esc(g.imagen)}" x="${x - 2}" y="${y - 6}" width="46" height="46"/>`;
+        s += `<rect class="${objetivo ? 'led-objetivo' : ''}" x="${x + 9}" y="${y + 47}" width="24" height="9" rx="2" fill="${objetivo ? g.color.hex : '#F7F5F0'}" stroke="${objetivo ? g.color.hex : '#B5AC97'}"/>`;
+      }
+    }
+    return s + '</svg>';
+  }
+
+  let temporizadorGuia = null;
+  async function guiarEnPasillo(productoId, tiendaId, imagen) {
+    clearInterval(temporizadorGuia);
+    abrirHoja(`<h2 id="hoja-titulo">Conectando con la etiqueta…</h2>
+      <div class="ruta-guia"><span>App</span><i></i><span>Nube</span><i></i><span>Gateway</span><i></i><span>Etiqueta</span></div>
+      <div class="esqueleto" style="height:190px;margin-top:12px"></div>`);
+    const t0 = performance.now();
+    let g;
+    try {
+      g = await api('/api/guia', { method: 'POST', body: JSON.stringify({ tienda_id: Number(tiendaId), producto_id: Number(productoId) }) });
+    } catch (error) {
+      abrirHoja(`<h2 id="hoja-titulo">No pudimos guiarte</h2><p>${esc(error.message)}</p><button class="boton ancho" type="button" data-cerrar>Cerrar</button>`);
+      return;
+    }
+    const totalMs = Math.round(performance.now() - t0);
+    api(`/api/guia/${g.id}/latencia`, { method: 'POST', body: JSON.stringify({ ms: totalMs }) }).catch(() => {});
+    g.imagen = imagen;
+    const internetMs = Math.max(0, totalMs - g.latencia_ms.total_servidor);
+    const ok = totalMs < g.meta_ms;
+    const seg = (ms) => (ms / 1000).toFixed(2).replace(/\.?0+$/, '') + ' s';
+    const pct = (ms) => Math.min(100, (ms / 3000) * 100).toFixed(1);
+    abrirHoja(`
+      <h2 id="hoja-titulo">Buscá la luz <span class="color-guia" style="--c:${g.color.hex}">${esc(g.color.nombre)}</span></h2>
+      <p>${esc(g.producto)} · ${esc(g.tienda)}</p>
+      <div class="ubicacion-guia"><b>${esc(g.pasillo)}</b><span>Sección ${g.seccion}</span><span>Estante ${esc(g.nivel)}</span></div>
+      ${dibujoGondola(g)}
+      <p class="cuenta-guia" id="cuenta-guia">La etiqueta parpadea durante ${g.parpadeo_seg} s</p>
+      <div class="latencia ${ok ? 'ok' : 'lenta'}">
+        <div class="latencia-cabeza"><b>Respuesta en ${seg(totalMs)}</b><span>${ok ? '✓ Dentro de la meta (menos de 2 s)' : 'Arriba de la meta de 2 s'}</span></div>
+        <div class="latencia-barra" role="img" aria-label="Tiempo de respuesta ${seg(totalMs)} de una meta de 2 segundos">
+          <i style="width:${pct(internetMs)}%;background:#8FA6C4"></i><i style="width:${pct(g.latencia_ms.nube_gateway)}%;background:#1F6FB2"></i><i style="width:${pct(g.latencia_ms.gateway_esl)}%;background:${g.color.hex}"></i>
+          <span class="meta-linea" style="left:${pct(g.meta_ms)}%"></span>
+        </div>
+        <div class="latencia-detalle"><span><i style="background:#8FA6C4"></i>Internet ${seg(internetMs)}</span><span><i style="background:#1F6FB2"></i>Nube → gateway ${seg(g.latencia_ms.nube_gateway)}</span><span><i style="background:${g.color.hex}"></i>Gateway → etiqueta ${seg(g.latencia_ms.gateway_esl)}</span></div>
+      </div>
+      <p class="nota-guia">Etiqueta ${esc(g.etiqueta)} · otros clientes ven otro color al mismo tiempo.</p>
+      <div class="acciones">
+        <button class="boton claro" type="button" data-guiar="${productoId}" data-tienda="${tiendaId}">Volver a encender</button>
+        <button class="boton ambar" type="button" data-encontrado="${g.id}">¡Lo encontré!</button>
+      </div>`);
+    let quedan = g.parpadeo_seg;
+    temporizadorGuia = setInterval(() => {
+      const el = $('#cuenta-guia');
+      if (!el) return clearInterval(temporizadorGuia);
+      quedan -= 1;
+      if (quedan <= 0) {
+        clearInterval(temporizadorGuia);
+        el.textContent = 'La etiqueta dejó de parpadear. Tocá "Volver a encender" si aún no lo ves.';
+        document.querySelectorAll('.led-objetivo').forEach((x) => x.classList.remove('led-objetivo'));
+      } else el.textContent = `La etiqueta parpadea ${quedan} s más`;
+    }, 1000);
   }
 
   // ---------- cupones: canje ----------
@@ -454,11 +543,21 @@
 
   // ---------- eventos ----------
   document.addEventListener('click', (e) => {
-    const el = e.target.closest('[data-cupon], [data-canjear], [data-elegir-tienda], [data-quitar], [data-cerrar], [data-volver], #btn-instalar, #btn-simular');
+    const el = e.target.closest('[data-guiar], [data-encontrado], [data-cupon], [data-canjear], [data-elegir-tienda], [data-quitar], [data-cerrar], [data-volver], #btn-instalar, #btn-simular');
     if (!el) return;
     if ('volver' in el.dataset) {
       if (history.length > 1) { e.preventDefault(); history.back(); }
       return;
+    }
+    if (el.dataset.guiar) {
+      const img = document.querySelector('.detalle-cabecera .miniatura img');
+      return guiarEnPasillo(el.dataset.guiar, el.dataset.tienda, img ? img.getAttribute('src') : `/img/productos/${el.dataset.guiar}.svg`);
+    }
+    if (el.dataset.encontrado) {
+      clearInterval(temporizadorGuia);
+      api(`/api/guia/${el.dataset.encontrado}/encontrada`, { method: 'POST' }).catch(() => {});
+      cerrarHoja();
+      return mostrarAviso('¡Listo! La etiqueta vuelve a mostrar solo el precio');
     }
     if (el.dataset.cupon) return abrirCupon(el.dataset.cupon).catch((err) => mostrarAviso(err.message));
     if (el.dataset.canjear) return canjear(el.dataset.canjear, el.dataset.tienda, el);

@@ -103,7 +103,7 @@ function sembrar(db) {
 
   db.exec('BEGIN');
   try {
-    for (const tabla of ['ventas_diarias', 'canjes', 'dispositivos', 'cupones', 'alertas', 'lecturas', 'inventario', 'productos', 'categorias', 'tiendas']) {
+    for (const tabla of ['guias', 'ventas_diarias', 'canjes', 'dispositivos', 'cupones', 'alertas', 'lecturas', 'inventario', 'productos', 'categorias', 'tiendas']) {
       db.exec(`DELETE FROM ${tabla}`);
     }
     db.exec("DELETE FROM sqlite_sequence");

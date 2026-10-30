@@ -9,7 +9,7 @@ function abrirBaseDeDatos(ruta, { sembrarSiVacia = true } = {}) {
   db.exec('PRAGMA journal_mode = WAL;');
 
   // Si la base es de una versión anterior del esquema, se recrea desde cero
-  const VERSION_ESQUEMA = 2;
+  const VERSION_ESQUEMA = 3;
   if (db.prepare('PRAGMA user_version').get().user_version < VERSION_ESQUEMA) {
     db.exec('DROP VIEW IF EXISTS v_disponibilidad');
     for (const { name } of db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'").all()) {

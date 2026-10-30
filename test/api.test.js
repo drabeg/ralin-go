@@ -56,3 +56,18 @@ test('Insights: la marca solo ve sus productos y la disponibilidad mejora frente
   assert.ok(r.actual.disponibilidad_pct > r.previo.disponibilidad_pct);
   assert.ok(patron.test('/api/insights/resumen'));
 });
+
+test('Guía en el pasillo: responde en menos de 2 s y da colores distintos a dos clientes', async () => {
+  const { crearRutas: rutasCon } = require('../api/rutas');
+  const { rutas: r2, registrarDispositivo: reg } = rutasCon(db, simulador, { demoraGateway: true });
+  const [, , guiar] = r2.find(([m, p]) => m === 'POST' && p.test('/api/guia'));
+  reg('telefono-guia-a'); reg('telefono-guia-b');
+  const t0 = Date.now();
+  const a = await guiar({ cuerpo: { tienda_id: 2, producto_id: 18 }, dispositivo: 'telefono-guia-a' });
+  assert.ok(Date.now() - t0 < 2000);
+  const b = await guiar({ cuerpo: { tienda_id: 2, producto_id: 18 }, dispositivo: 'telefono-guia-b' });
+  assert.strictEqual(a.estado, 201);
+  assert.ok(a.datos.latencia_ms.total_servidor < a.datos.meta_ms);
+  assert.notStrictEqual(a.datos.color.nombre, b.datos.color.nombre);
+  await assert.rejects(() => guiar({ cuerpo: { tienda_id: 1, producto_id: 18 }, dispositivo: 'telefono-guia-a' }), /agotado/);
+});
