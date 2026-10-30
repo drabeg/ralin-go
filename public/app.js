@@ -98,13 +98,23 @@
     c.hidden = estado.lista.length === 0;
   }
 
+  // Ilustraciones vectoriales (public/img) e íconos de línea propios
+  const foto = (src) => `<img src="${esc(src)}" alt="" loading="lazy" decoding="async">`;
+  const TRAZO = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+  const ICONOS = {
+    buscar: `<svg viewBox="0 0 48 48" aria-hidden="true"><circle ${TRAZO} cx="21" cy="21" r="12"/><path ${TRAZO} d="M30 30l10 10M16 21h10"/></svg>`,
+    lista: `<svg viewBox="0 0 48 48" aria-hidden="true"><rect ${TRAZO} x="10" y="6" width="28" height="36" rx="4"/><path ${TRAZO} d="M17 17h14M17 24h14M17 31h8"/></svg>`,
+    senal: `<svg viewBox="0 0 48 48" aria-hidden="true"><path ${TRAZO} d="M8 18a24 24 0 0 1 32 0M14 25a15 15 0 0 1 20 0M20 32a6 6 0 0 1 8 0M8 8l32 32"/></svg>`,
+    etiqueta: `<svg viewBox="0 0 48 48" aria-hidden="true"><path ${TRAZO} d="M6 24V8h16l20 20-14 14z"/><circle ${TRAZO} cx="15" cy="17" r="3"/><path ${TRAZO} d="M22 30l8-8"/></svg>`,
+  };
+
   const lupa = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 0 1 5.6 11.2l5.1 5.1-1.4 1.4-5.1-5.1A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg>';
 
   // ---------- componentes ----------
   function filaProducto(p) {
     const precio = p.precio_en_mi_tienda || p.precio_desde || p.precio_ref;
     return `<a class="producto" href="#/producto/${p.id}">
-      <span class="miniatura" aria-hidden="true">${p.icono}</span>
+      <span class="miniatura" aria-hidden="true">${foto(p.imagen)}</span>
       <div class="producto-info">
         <h3>${esc(p.nombre)} ${esc(p.presentacion)}</h3>
         <p>${esc(p.marca)} · hay en ${p.tiendas_con_stock} de ${p.tiendas_total} tiendas${p.cupon_id ? ' · con cupón' : ''}</p>
@@ -117,7 +127,7 @@
     const usado = Boolean(c.codigo);
     return `<article class="cupon ${usado ? 'usado' : ''}">
       <div class="valor">${qCorto(c.descuento_q)} <small>de descuento</small></div>
-      <div class="que"><span class="emoji" aria-hidden="true">${c.icono}</span><span>${esc(c.producto)} ${esc(c.marca)} · ${esc(c.presentacion)}</span></div>
+      <div class="que"><span class="emoji" aria-hidden="true">${foto(c.imagen)}</span><span>${esc(c.producto)} ${esc(c.marca)} · ${esc(c.presentacion)}</span></div>
       <div class="pie">
         <span class="vence">${usado ? `Canjeado · <span class="codigo-mini">${esc(c.codigo)}</span>` : `Vence el ${fecha(c.vence_en)}`}</span>
         <button class="boton chico ${usado ? 'claro' : 'ambar'}" type="button" data-cupon="${c.id}">${usado ? 'Ver código' : 'Usar'}</button>
@@ -189,7 +199,7 @@
       </section>
       <section class="seccion">
         <div class="seccion-titulo"><h2>Categorías</h2></div>
-        <div class="categorias">${categorias.map((c) => `<a class="categoria" href="#/buscar?categoria=${c.id}"><span class="emoji" aria-hidden="true">${c.icono}</span>${esc(c.nombre)}</a>`).join('')}</div>
+        <div class="categorias">${categorias.map((c) => `<a class="categoria" href="#/buscar?categoria=${c.id}"><span class="emoji" aria-hidden="true">${foto(c.imagen)}</span>${esc(c.nombre)}</a>`).join('')}</div>
       </section>
       <a class="enlace-panel" href="#/panel">Panel en vivo de RALIN →</a>`);
     $('#form-buscar').addEventListener('submit', (e) => {
@@ -222,7 +232,7 @@
       if (!vigente.es(id) || !resultados.isConnected) return;
       resultados.innerHTML = productos.length
         ? `<div class="lista-productos">${productos.map(filaProducto).join('')}</div>`
-        : `<div class="vacio"><div class="emoji">🔎</div><h2>No encontramos “${esc(texto)}”</h2><p>Probá con otra palabra, por ejemplo “leche” o “café”.</p></div>`;
+        : `<div class="vacio"><div class="emoji">${ICONOS.buscar}</div><h2>No encontramos “${esc(texto)}”</h2><p>Probá con otra palabra, por ejemplo “leche” o “café”.</p></div>`;
     };
     const entrada = $('#form-buscar input');
     let demora;
@@ -256,10 +266,10 @@
     if (!pintar(`
       <a class="volver" href="#/buscar" data-volver>‹ Volver</a>
       <div class="detalle-cabecera">
-        <span class="miniatura" aria-hidden="true">${p.icono}</span>
+        <span class="miniatura" aria-hidden="true">${foto(p.imagen)}</span>
         <div><h1>${esc(p.nombre)} ${esc(p.presentacion)}</h1><p>${esc(p.marca)} · ${esc(p.categoria)}</p></div>
       </div>
-      ${p.cupon ? `<div class="cupon-destacado"><span style="font-size:26px" aria-hidden="true">🏷️</span>
+      ${p.cupon ? `<div class="cupon-destacado"><span class="icono-cupon">${ICONOS.etiqueta}</span>
         <p><b>${qCorto(p.cupon.descuento_q)} de descuento</b><br>Cupón de la marca, vence el ${fecha(p.cupon.vence_en)}</p>
         <button class="boton chico ambar" type="button" data-cupon="${p.cupon.id}">Usar</button></div>` : ''}
       <section class="seccion">
@@ -300,7 +310,7 @@
   async function vistaLista(vista) {
     const pintar = crearPintor(vista);
     if (estado.lista.length === 0) {
-      pintar(`<div class="vacio"><div class="emoji">📝</div><h2>Tu lista está vacía</h2>
+      pintar(`<div class="vacio"><div class="emoji">${ICONOS.lista}</div><h2>Tu lista está vacía</h2>
         <p>Agregá productos y te decimos en qué tienda encontrás todo.</p>
         <a class="boton ambar" href="#/buscar" style="margin-top:16px">Buscar productos</a></div>`);
       return;
@@ -321,7 +331,7 @@
       <div class="saludo"><h1>Mi lista</h1><p>${total} producto${total === 1 ? '' : 's'} · estado en ${esc(tiendaActual().nombre)}</p></div>
       <div class="lista-productos seccion">${mios.map((p) => `
         <div class="item-lista">
-          <span class="miniatura" aria-hidden="true">${p.icono}</span>
+          <span class="miniatura" aria-hidden="true">${foto(p.imagen)}</span>
           <a class="producto-info" href="#/producto/${p.id}" style="text-decoration:none"><h3>${esc(p.nombre)} ${esc(p.presentacion)}</h3><p>${esc(p.marca)}</p></a>
           ${pill(p.estado_en_mi_tienda)}
           <button class="quitar" type="button" data-quitar="${p.id}" aria-label="Quitar ${esc(p.nombre)}">×</button>
@@ -345,11 +355,11 @@
         </div>
         <button class="boton ambar ancho" type="button" id="btn-simular">Simular venta en ${esc((tiendaActual() || {}).nombre || 'la tienda')}</button>
         <div class="feed"><h2>Alertas de góndola</h2>${m.ultimas_alertas.map((a) => `
-          <div class="feed-item"><span class="emoji" aria-hidden="true">${a.icono}</span>
+          <div class="feed-item"><span class="emoji" aria-hidden="true">${foto(a.imagen)}</span>
             <div>${esc(a.producto)} ${esc(a.presentacion)} · ${a.nivel_pct}%<small>${esc(a.tienda)} · ${esc(a.pasillo)} · ${haceCuanto(a.atendida_en || a.creada_en)}</small></div>
             <span class="tag ${a.atendida_en ? 'atendida' : 'abierta'}">${a.atendida_en ? 'Repuesta' : 'Abierta'}</span></div>`).join('')}</div>
         <div class="feed"><h2>Últimos cupones canjeados</h2>${m.ultimos_canjes.length ? m.ultimos_canjes.map((c) => `
-          <div class="feed-item"><span class="emoji" aria-hidden="true">${c.icono}</span>
+          <div class="feed-item"><span class="emoji" aria-hidden="true">${foto(c.imagen)}</span>
             <div>${esc(c.titulo)}<small>${esc(c.tienda)} · ${haceCuanto(c.creado_en)}</small></div><b>+${q(c.costo_canje_q)}</b></div>`).join('')
           : '<p class="sub">Todavía no hay canjes. ¡Escaneá el QR y usá un cupón!</p>'}</div>
         <a class="boton claro ancho" href="/presentar">Mostrar QR para la clase</a>
@@ -437,7 +447,7 @@
     try {
       await vista(contenedor, ...params);
     } catch (error) {
-      contenedor.innerHTML = `<div class="vacio"><div class="emoji">📡</div><h2>No pudimos conectar</h2>
+      contenedor.innerHTML = `<div class="vacio"><div class="emoji">${ICONOS.senal}</div><h2>No pudimos conectar</h2>
         <p>${esc(error.message)}</p><button class="boton" type="button" style="margin-top:16px" onclick="location.reload()">Reintentar</button></div>`;
     }
   }

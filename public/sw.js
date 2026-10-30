@@ -1,6 +1,6 @@
 // Service worker de RALIN Go: permite instalar la app y abrirla aunque falle la red.
 // La API siempre va a la red (los datos son en tiempo real).
-const CACHE = 'ralin-go-v1';
+const CACHE = 'ralin-go-v2';
 const ARCHIVOS = ['/', '/index.html', '/styles.css', '/app.js', '/manifest.webmanifest', '/icons/icono-192.png', '/icons/icono-512.png'];
 
 self.addEventListener('install', (e) => {

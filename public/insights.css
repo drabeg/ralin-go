@@ -76,7 +76,7 @@ td { text-align: right; padding: 10px; border-bottom: 1px solid var(--grilla); w
 th:first-child, td:first-child { text-align: left; }
 tbody tr:hover { background: #FBFAF6; }
 .prod { display: flex; align-items: center; gap: 10px; font-weight: 600; }
-.prod .emoji { font-size: 22px; }
+.prod .emoji { width: 34px; height: 34px; flex: none; border-radius: 8px; background: var(--crema); }
 .sube { color: var(--bueno); font-weight: 700; }
 .baja { color: var(--critico); font-weight: 700; }
 

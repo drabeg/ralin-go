@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning server.js",
     "seed": "node --disable-warning=ExperimentalWarning db/seed.js",
-    "test": "node --disable-warning=ExperimentalWarning --test test/api.test.js"
+    "test": "node --disable-warning=ExperimentalWarning --test test/api.test.js",
+    "ilustraciones": "node scripts/ilustraciones.js"
   },
   "engines": {
     "node": ">=22.13.0"

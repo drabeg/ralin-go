@@ -31,9 +31,9 @@ function crearRutasInsights(db) {
     serie: db.prepare(`SELECT vd.fecha, ${METRICAS} ${BASE} AND (? = 0 OR vd.tienda_id = ?) GROUP BY vd.fecha ORDER BY vd.fecha`),
     porTienda: db.prepare(`SELECT t.id, t.nombre, t.zona, ${METRICAS} ${BASE.replace('WHERE', 'JOIN tiendas t ON t.id = vd.tienda_id WHERE')}
                            GROUP BY t.id ORDER BY t.id`),
-    porProducto: db.prepare(`SELECT p.id, p.nombre, p.presentacion, p.icono, ${METRICAS} ${BASE} AND (? = 0 OR vd.tienda_id = ?)
+    porProducto: db.prepare(`SELECT p.id, p.nombre, p.presentacion, p.imagen, ${METRICAS} ${BASE} AND (? = 0 OR vd.tienda_id = ?)
                              GROUP BY p.id ORDER BY ventas_q DESC`),
-    productosMarca: db.prepare(`SELECT id, nombre, presentacion, icono FROM productos WHERE (? = '' OR marca = ?) ORDER BY nombre`),
+    productosMarca: db.prepare(`SELECT id, nombre, presentacion, imagen FROM productos WHERE (? = '' OR marca = ?) ORDER BY nombre`),
     tiendas: db.prepare('SELECT id, nombre, zona FROM tiendas ORDER BY id'),
     gondolas: db.prepare(`SELECT v.producto_id, v.tienda_id, v.nivel_pct, v.estado, v.actualizado_en
                           FROM v_disponibilidad v JOIN productos p ON p.id = v.producto_id WHERE (? = '' OR p.marca = ?)`),

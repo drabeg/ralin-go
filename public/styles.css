@@ -123,7 +123,8 @@ main { padding: 16px; outline: none; }
   text-decoration: none; text-align: center;
   font-size: 12px; font-weight: 600; line-height: 1.2;
 }
-.categoria .emoji { font-size: 28px; line-height: 1; }
+.categoria .emoji { display: grid; place-items: center; width: 40px; height: 40px; }
+.categoria .emoji img { width: 36px; height: 36px; }
 
 .carrusel { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 2px 16px 8px; }
 .carrusel::-webkit-scrollbar { display: none; }
@@ -155,9 +156,10 @@ main { padding: 16px; outline: none; }
 }
 .miniatura {
   display: grid; place-items: center; flex: none;
-  width: 52px; height: 52px; border-radius: 12px;
-  background: var(--crema); font-size: 28px;
+  width: 56px; height: 56px; border-radius: 12px;
+  background: var(--crema); overflow: hidden;
 }
+.miniatura img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.18); }
 .producto-info { flex: 1; min-width: 0; }
 .producto-info h3 { font-size: 15px; line-height: 1.25; }
 .producto-info p { font-size: 13px; color: var(--gris-claro); margin-top: 2px; }
@@ -187,7 +189,7 @@ main { padding: 16px; outline: none; }
 /* ---------- detalle ---------- */
 .volver { display: inline-flex; align-items: center; gap: 4px; color: var(--azul); font-weight: 600; text-decoration: none; font-size: 15px; }
 .detalle-cabecera { display: flex; gap: 16px; align-items: center; margin-top: 12px; }
-.detalle-cabecera .miniatura { width: 84px; height: 84px; font-size: 48px; background: var(--blanco); border: 1px solid var(--borde); }
+.detalle-cabecera .miniatura { width: 96px; height: 96px; background: var(--blanco); border: 1px solid var(--borde); }
 .detalle-cabecera h1 { font-size: 22px; line-height: 1.2; }
 .detalle-cabecera p { color: var(--gris); margin-top: 4px; }
 .en-vivo { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--hay); }
@@ -199,6 +201,8 @@ main { padding: 16px; outline: none; }
   margin-top: 16px; padding: 14px; border-radius: 14px;
   background: var(--ambar-suave); border: 1px dashed var(--ambar);
 }
+.icono-cupon { flex: none; color: var(--pocos); }
+.icono-cupon svg { width: 32px; height: 32px; display: block; }
 .cupon-destacado p { flex: 1; font-size: 14px; line-height: 1.35; }
 .cupon-destacado b { font-size: 16px; }
 
@@ -247,7 +251,8 @@ main { padding: 16px; outline: none; }
 .cupon .valor { font-size: 26px; font-weight: 800; color: var(--noche); }
 .cupon .valor small { font-size: 14px; font-weight: 600; color: var(--gris); }
 .cupon .que { display: flex; align-items: center; gap: 10px; font-size: 14px; line-height: 1.3; }
-.cupon .que span.emoji { font-size: 26px; }
+.cupon .que span.emoji { flex: none; width: 44px; height: 44px; border-radius: 10px; background: var(--crema); }
+.cupon .que span.emoji img { width: 100%; height: 100%; }
 .cupon .pie { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
 .cupon .vence { font-size: 12px; color: var(--gris-claro); }
 .cupon.usado { background: #FBFAF6; }
@@ -268,7 +273,8 @@ main { padding: 16px; outline: none; }
 
 /* ---------- vacío / carga ---------- */
 .vacio { padding: 40px 16px; text-align: center; color: var(--gris); }
-.vacio .emoji { font-size: 44px; }
+.vacio .emoji { color: var(--azul); }
+.vacio .emoji svg { width: 56px; height: 56px; }
 .vacio h2 { font-size: 18px; color: var(--tinta); margin: 10px 0 6px; }
 .esqueleto { height: 76px; border-radius: 14px; background: linear-gradient(90deg, #EFECE4, #F7F5F0, #EFECE4); background-size: 200% 100%; animation: brillo 1.2s infinite; }
 @keyframes brillo { to { background-position: -200% 0; } }
@@ -347,7 +353,8 @@ main { padding: 16px; outline: none; }
 .feed { margin-top: 20px; }
 .feed h2 { font-size: 15px; margin-bottom: 8px; color: var(--ambar); }
 .feed-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 14px; }
-.feed-item .emoji { font-size: 22px; }
+.feed-item .emoji { flex: none; width: 36px; height: 36px; border-radius: 10px; background: var(--crema); }
+.feed-item .emoji img { width: 100%; height: 100%; }
 .feed-item div { flex: 1; min-width: 0; }
 .feed-item small { display: block; color: #8FA6C4; font-size: 12px; }
 .feed-item .tag { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; }

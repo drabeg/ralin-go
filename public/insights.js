@@ -187,7 +187,7 @@
     $('#t-productos').innerHTML = `
       <thead><tr><th>Producto</th><th>Ventas</th><th>Unidades</th><th>vs. período anterior</th><th>Disponibilidad</th><th>Días con quiebre</th><th>Ventas perdidas</th><th>Cupones</th></tr></thead>
       <tbody>${productos.map((p) => `<tr>
-        <td><span class="prod"><span class="emoji" aria-hidden="true">${p.icono}</span>${esc(p.nombre)} ${esc(p.presentacion)}</span></td>
+        <td><span class="prod"><img class="emoji" src="${esc(p.imagen)}" alt="" loading="lazy">${esc(p.nombre)} ${esc(p.presentacion)}</span></td>
         <td>${Q(p.ventas_q)}</td><td>${num(p.unidades)}</td><td>${variacion(p.variacion_pct)}</td>
         <td>${num(p.disponibilidad_pct, 1)} %</td><td>${num(p.quiebres)}</td><td>${Q(p.perdidas_q)}</td><td>${num(p.canjes)}</td>
       </tr>`).join('')}</tbody>`;
@@ -202,7 +202,7 @@
       $('#t-vivo').innerHTML = `
         <thead><tr><th>Producto</th>${v.tiendas.map((t) => `<th>${esc(t.nombre.replace(/^Súper /, ''))}</th>`).join('')}</tr></thead>
         <tbody>${v.productos.map((p) => `<tr>
-          <td><span class="prod"><span class="emoji" aria-hidden="true">${p.icono}</span>${esc(p.nombre)} ${esc(p.presentacion)}</span></td>
+          <td><span class="prod"><img class="emoji" src="${esc(p.imagen)}" alt="" loading="lazy">${esc(p.nombre)} ${esc(p.presentacion)}</span></td>
           ${v.tiendas.map((t) => {
             const c = celda(p.id, t.id);
             if (!c) return '<td>–</td>';

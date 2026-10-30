@@ -29,7 +29,7 @@ function crearRutas(db, simulador) {
       SELECT c.*, COUNT(p.id) AS productos FROM categorias c
       LEFT JOIN productos p ON p.categoria_id = c.id GROUP BY c.id ORDER BY c.id`),
     productos: db.prepare(`
-      SELECT p.id, p.nombre, p.marca, p.presentacion, p.icono, p.precio_ref,
+      SELECT p.id, p.nombre, p.marca, p.presentacion, p.imagen, p.precio_ref,
              c.id AS categoria_id, c.nombre AS categoria,
              SUM(v.estado != 'agotado') AS tiendas_con_stock,
              COUNT(v.tienda_id)          AS tiendas_total,
@@ -45,7 +45,7 @@ function crearRutas(db, simulador) {
       ORDER BY p.nombre, p.presentacion
       LIMIT 60`),
     producto: db.prepare(`
-      SELECT p.id, p.nombre, p.marca, p.presentacion, p.icono, p.precio_ref,
+      SELECT p.id, p.nombre, p.marca, p.presentacion, p.imagen, p.precio_ref,
              c.id AS categoria_id, c.nombre AS categoria
       FROM productos p JOIN categorias c ON c.id = p.categoria_id WHERE p.id = ?`),
     disponibilidadProducto: db.prepare(`
@@ -57,7 +57,7 @@ function crearRutas(db, simulador) {
     cuponDeProducto: db.prepare('SELECT * FROM cupones WHERE producto_id = ? AND activo = 1'),
     cupones: db.prepare(`
       SELECT cu.id, cu.titulo, cu.descuento_q, cu.vence_en,
-             p.id AS producto_id, p.nombre AS producto, p.marca, p.presentacion, p.icono,
+             p.id AS producto_id, p.nombre AS producto, p.marca, p.presentacion, p.imagen,
              ca.codigo, ca.creado_en AS canjeado_en, t.nombre AS canjeado_en_tienda
       FROM cupones cu
       JOIN productos p ON p.id = cu.producto_id
@@ -87,13 +87,13 @@ function crearRutas(db, simulador) {
         (SELECT COUNT(*) FROM lecturas WHERE creada_en >= ?)                     AS lecturas_ultima_hora,
         (SELECT COUNT(*) FROM inventario)                                        AS gondolas_monitoreadas`),
     ultimosCanjes: db.prepare(`
-      SELECT ca.creado_en, cu.titulo, cu.costo_canje_q, t.nombre AS tienda, p.icono
+      SELECT ca.creado_en, cu.titulo, cu.costo_canje_q, t.nombre AS tienda, p.imagen
       FROM canjes ca JOIN cupones cu ON cu.id = ca.cupon_id
       JOIN tiendas t ON t.id = ca.tienda_id JOIN productos p ON p.id = cu.producto_id
       ORDER BY ca.id DESC LIMIT 6`),
     alertas: db.prepare(`
       SELECT a.id, a.nivel_pct, a.creada_en, a.atendida_en,
-             p.nombre AS producto, p.marca, p.presentacion, p.icono,
+             p.nombre AS producto, p.marca, p.presentacion, p.imagen,
              t.nombre AS tienda, i.pasillo
       FROM alertas a JOIN productos p ON p.id = a.producto_id
       JOIN tiendas t ON t.id = a.tienda_id

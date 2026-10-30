@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/drabeg/ralin-go/actions/workflows/pruebas.yml"><img src="https://github.com/drabeg/ralin-go/actions/workflows/pruebas.yml/badge.svg" alt="Pruebas"></a>
+  <a href="https://github.com/TU-USUARIO/ralin-go/actions/workflows/pruebas.yml"><img src="https://github.com/TU-USUARIO/ralin-go/actions/workflows/pruebas.yml/badge.svg" alt="Pruebas"></a>
   <img src="https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white" alt="Node.js 22+">
   <img src="https://img.shields.io/badge/SQLite-node%3Asqlite-003B57?logo=sqlite&logoColor=white" alt="SQLite">
   <img src="https://img.shields.io/badge/PWA-instalable-5A0FC8?logo=pwa&logoColor=white" alt="PWA">
@@ -61,6 +61,7 @@ RALIN propone estanterías con sensores de peso y etiquetas electrónicas que mi
 - Cupones patrocinados por marcas, con código de canje y un solo canje por dispositivo.
 - Lista de compras que recomienda la tienda donde se encuentran más productos.
 - Panel en vivo con usuarios, canjes, facturación a marcas y alertas de reposición.
+- Ilustraciones vectoriales propias para cada producto, con el empaque y los colores de su marca.
 - Instalable en Android e iOS. Funciona sin conexión gracias al *service worker*.
 
 **RALIN Insights**
@@ -101,7 +102,9 @@ ralin-go/
 │   ├── index.html         app RALIN Go (app.js, styles.css)
 │   ├── insights.html      dashboard (insights.js, insights.css)
 │   ├── presentar.html     pantalla con código QR para compartir la app
+│   ├── img/               ilustraciones vectoriales de productos y categorías
 │   └── manifest.webmanifest, sw.js, icons/
+├── scripts/ilustraciones.js  genera las ilustraciones SVG (npm run ilustraciones)
 ├── test/api.test.js       pruebas automatizadas
 ├── docs/capturas/         imágenes del README
 └── render.yaml            configuración de despliegue
@@ -112,7 +115,7 @@ ralin-go/
 **Requisito:** Node.js 22.13 o superior (`node -v`). No hay que instalar paquetes.
 
 ```bash
-git clone https://github.com/drabeg/ralin-go.git
+git clone https://github.com/TU-USUARIO/ralin-go.git
 cd ralin-go
 npm start
 ```
@@ -129,6 +132,7 @@ npm start
 | `npm start` | Inicia el servidor (puerto `PORT`, por defecto 3000) |
 | `npm run seed` | Reinicia la base de datos con los datos de demostración |
 | `npm test` | Ejecuta las pruebas |
+| `npm run ilustraciones` | Regenera las ilustraciones SVG de productos y categorías |
 
 Variables de entorno opcionales: `PORT`, `DB_PATH` (ruta del archivo SQLite) y `SIMULADOR=apagado`.
 

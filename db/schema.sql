@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS tiendas (
 CREATE TABLE IF NOT EXISTS categorias (
   id      INTEGER PRIMARY KEY,
   nombre  TEXT NOT NULL UNIQUE,
-  icono   TEXT NOT NULL
+  imagen  TEXT NOT NULL                -- ícono vectorial (public/img/categorias)
 );
 
 CREATE TABLE IF NOT EXISTS productos (
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS productos (
   categoria_id     INTEGER NOT NULL REFERENCES categorias(id),
   precio_ref       REAL    NOT NULL CHECK (precio_ref > 0),
   peso_unitario_g  INTEGER NOT NULL CHECK (peso_unitario_g > 0),
-  icono            TEXT    NOT NULL,
+  imagen           TEXT    NOT NULL,           -- ilustración del empaque (public/img/productos)
   busqueda         TEXT    NOT NULL            -- nombre + marca + categoría, en minúsculas y sin tildes
 );
 

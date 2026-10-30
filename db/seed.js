@@ -13,50 +13,51 @@ const TIENDAS = [
 ];
 
 const CATEGORIAS = [
-  [1, 'Bebidas', '🥤'],
-  [2, 'Lácteos', '🥛'],
-  [3, 'Abarrotes', '🍚'],
-  [4, 'Limpieza', '🧴'],
-  [5, 'Panadería', '🍞'],
-  [6, 'Snacks', '🍪'],
-  [7, 'Desayuno', '☕'],
-  [8, 'Cuidado personal', '🧼'],
+  [1, 'Bebidas'],
+  [2, 'Lácteos'],
+  [3, 'Abarrotes'],
+  [4, 'Limpieza'],
+  [5, 'Panadería'],
+  [6, 'Snacks'],
+  [7, 'Desayuno'],
+  [8, 'Cuidado personal'],
 ];
 
-// id, nombre, marca, presentación, categoría, precio_ref (Q), peso unitario (g), ícono
+// id, nombre, marca, presentación, categoría, precio_ref (Q), peso unitario (g)
+// La ilustración de cada producto está en public/img/productos/<id>.svg
 const PRODUCTOS = [
-  [1, 'Gaseosa sabor cola', 'Chispa', '2.5 L', 1, 17.5, 2620, '🥤'],
-  [2, 'Gaseosa sabor naranja', 'Chispa', '2.5 L', 1, 16.5, 2620, '🥤'],
-  [3, 'Agua pura', 'Volcán Azul', '600 ml', 1, 4.25, 620, '💧'],
-  [4, 'Agua pura', 'Volcán Azul', '2.5 L', 1, 9.75, 2560, '💧'],
-  [5, 'Jugo de naranja', 'Huerto Real', '1 L', 1, 14.9, 1060, '🧃'],
-  [6, 'Bebida hidratante', 'Ráfaga', '600 ml', 1, 9.5, 640, '🧃'],
-  [7, 'Leche entera', 'Nevada', '1 L', 2, 12.25, 1040, '🥛'],
-  [8, 'Leche deslactosada', 'Nevada', '1 L', 2, 13.9, 1040, '🥛'],
-  [9, 'Yogur de fresa', 'Nevada', '1 L', 2, 19.5, 1060, '🍓'],
-  [10, 'Queso fresco', 'Finca Las Nubes', '400 g', 2, 24.0, 410, '🧀'],
-  [11, 'Mantequilla', 'Nevada', '225 g', 2, 18.75, 230, '🧈'],
-  [12, 'Arroz blanco', 'Grano de Oro', '2 lb', 3, 11.5, 910, '🍚'],
-  [13, 'Frijol negro volteado', 'Maizal', '400 g', 3, 8.9, 430, '🫘'],
-  [14, 'Aceite vegetal', 'Doña Clara', '1.5 L', 3, 34.9, 1420, '🫗'],
-  [15, 'Harina de maíz', 'Maizal', '2 lb', 3, 9.25, 910, '🌽'],
-  [16, 'Pasta spaghetti', 'La Toscana', '400 g', 3, 7.5, 410, '🍝'],
-  [17, 'Azúcar', 'Caña Dulce', '5 lb', 3, 21.0, 2270, '🍬'],
-  [18, 'Detergente líquido', 'Brisa Clara', '1.8 L', 4, 42.5, 1950, '🧴'],
-  [19, 'Detergente en polvo', 'Brisa Clara', '1 kg', 4, 28.9, 1010, '🧺'],
-  [20, 'Papel higiénico', 'Suave Nube', '12 rollos', 4, 46.0, 1300, '🧻'],
-  [21, 'Lavaplatos líquido', 'Brisa Clara', '750 ml', 4, 17.25, 800, '🧽'],
-  [22, 'Cloro', 'Puro Blanco', '1 galón', 4, 19.9, 3900, '🧪'],
-  [23, 'Pan de molde blanco', 'Aurora', '600 g', 5, 16.5, 600, '🍞'],
-  [24, 'Pan integral', 'Aurora', '600 g', 5, 19.25, 600, '🍞'],
-  [25, 'Galletas de chocolate', 'Crocante', '6 paquetes', 6, 14.75, 300, '🍪'],
-  [26, 'Papalinas con sal', 'Crocante', '150 g', 6, 12.5, 160, '🍟'],
-  [27, 'Café molido', 'Cafetal de Altura', '400 g', 7, 39.9, 410, '☕'],
-  [28, 'Avena en hojuelas', 'Campo Verde', '400 g', 7, 11.75, 410, '🥣'],
-  [29, 'Huevos', 'Granja Sol', '30 unidades', 7, 42.0, 1800, '🥚'],
-  [30, 'Pasta dental', 'Sonrisa+', '100 ml', 8, 15.5, 140, '🪥'],
-  [31, 'Jabón de tocador', 'Pureza', '3 unidades', 8, 18.9, 330, '🧼'],
-  [32, 'Shampoo', 'Cascada', '400 ml', 8, 32.5, 430, '🧴'],
+  [1, 'Gaseosa sabor cola', 'Chispa', '2.5 L', 1, 17.5, 2620],
+  [2, 'Gaseosa sabor naranja', 'Chispa', '2.5 L', 1, 16.5, 2620],
+  [3, 'Agua pura', 'Volcán Azul', '600 ml', 1, 4.25, 620],
+  [4, 'Agua pura', 'Volcán Azul', '2.5 L', 1, 9.75, 2560],
+  [5, 'Jugo de naranja', 'Huerto Real', '1 L', 1, 14.9, 1060],
+  [6, 'Bebida hidratante', 'Ráfaga', '600 ml', 1, 9.5, 640],
+  [7, 'Leche entera', 'Nevada', '1 L', 2, 12.25, 1040],
+  [8, 'Leche deslactosada', 'Nevada', '1 L', 2, 13.9, 1040],
+  [9, 'Yogur de fresa', 'Nevada', '1 L', 2, 19.5, 1060],
+  [10, 'Queso fresco', 'Finca Las Nubes', '400 g', 2, 24.0, 410],
+  [11, 'Mantequilla', 'Nevada', '225 g', 2, 18.75, 230],
+  [12, 'Arroz blanco', 'Grano de Oro', '2 lb', 3, 11.5, 910],
+  [13, 'Frijol negro volteado', 'Maizal', '400 g', 3, 8.9, 430],
+  [14, 'Aceite vegetal', 'Doña Clara', '1.5 L', 3, 34.9, 1420],
+  [15, 'Harina de maíz', 'Maizal', '2 lb', 3, 9.25, 910],
+  [16, 'Pasta spaghetti', 'La Toscana', '400 g', 3, 7.5, 410],
+  [17, 'Azúcar', 'Caña Dulce', '5 lb', 3, 21.0, 2270],
+  [18, 'Detergente líquido', 'Brisa Clara', '1.8 L', 4, 42.5, 1950],
+  [19, 'Detergente en polvo', 'Brisa Clara', '1 kg', 4, 28.9, 1010],
+  [20, 'Papel higiénico', 'Suave Nube', '12 rollos', 4, 46.0, 1300],
+  [21, 'Lavaplatos líquido', 'Brisa Clara', '750 ml', 4, 17.25, 800],
+  [22, 'Cloro', 'Puro Blanco', '1 galón', 4, 19.9, 3900],
+  [23, 'Pan de molde blanco', 'Aurora', '600 g', 5, 16.5, 600],
+  [24, 'Pan integral', 'Aurora', '600 g', 5, 19.25, 600],
+  [25, 'Galletas de chocolate', 'Crocante', '6 paquetes', 6, 14.75, 300],
+  [26, 'Papalinas con sal', 'Crocante', '150 g', 6, 12.5, 160],
+  [27, 'Café molido', 'Cafetal de Altura', '400 g', 7, 39.9, 410],
+  [28, 'Avena en hojuelas', 'Campo Verde', '400 g', 7, 11.75, 410],
+  [29, 'Huevos', 'Granja Sol', '30 unidades', 7, 42.0, 1800],
+  [30, 'Pasta dental', 'Sonrisa+', '100 ml', 8, 15.5, 140],
+  [31, 'Jabón de tocador', 'Pureza', '3 unidades', 8, 18.9, 330],
+  [32, 'Shampoo', 'Cascada', '400 ml', 8, 32.5, 430],
 ];
 
 // id, producto, título, descuento (Q), vence
@@ -110,15 +111,15 @@ function sembrar(db) {
     const insTienda = db.prepare('INSERT INTO tiendas (id, nombre, zona, area, direccion, horario) VALUES (?, ?, ?, ?, ?, ?)');
     for (const t of TIENDAS) insTienda.run(...t);
 
-    const insCategoria = db.prepare('INSERT INTO categorias (id, nombre, icono) VALUES (?, ?, ?)');
-    for (const c of CATEGORIAS) insCategoria.run(...c);
+    const insCategoria = db.prepare('INSERT INTO categorias (id, nombre, imagen) VALUES (?, ?, ?)');
+    for (const [id, nombre] of CATEGORIAS) insCategoria.run(id, nombre, `/img/categorias/${id}.svg`);
 
     const nombreCategoria = Object.fromEntries(CATEGORIAS.map(([id, nombre]) => [id, nombre]));
     const insProducto = db.prepare(`INSERT INTO productos
-      (id, nombre, marca, presentacion, categoria_id, precio_ref, peso_unitario_g, icono, busqueda)
+      (id, nombre, marca, presentacion, categoria_id, precio_ref, peso_unitario_g, imagen, busqueda)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-    for (const [id, nombre, marca, pres, cat, precio, peso, icono] of PRODUCTOS) {
-      insProducto.run(id, nombre, marca, pres, cat, precio, peso, icono, normalizar(`${nombre} ${marca} ${nombreCategoria[cat]}`));
+    for (const [id, nombre, marca, pres, cat, precio, peso] of PRODUCTOS) {
+      insProducto.run(id, nombre, marca, pres, cat, precio, peso, `/img/productos/${id}.svg`, normalizar(`${nombre} ${marca} ${nombreCategoria[cat]}`));
     }
 
     const escenario = new Map(ESCENARIO.map(([t, p, u]) => [`${t}-${p}`, u]));
