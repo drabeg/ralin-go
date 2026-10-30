@@ -398,7 +398,8 @@
       const r = await api(`/api/cupones/${cuponId}/canjear`, { method: 'POST', body: JSON.stringify({ tienda_id: Number(tiendaId) }) });
       mostrarTicket(r);
       estado.cupones = await api('/api/cupones');
-      if (/^#\/cupones|^#?\/?$/.test(location.hash || '#/')) navegar();
+      // Refresca la vista de fondo sin cerrar el cupón: lo cierra el usuario con "Listo"
+      if (/^#\/cupones|^#?\/?$/.test(location.hash || '#/')) navegar({ mantenerHoja: true });
     } catch (error) {
       boton.disabled = false;
       mostrarAviso(error.message);
@@ -424,15 +425,15 @@
     [/^.*$/, vistaInicio, 'inicio'],
   ];
 
-  async function navegar() {
+  async function navegar(opciones = {}) {
     clearInterval(estado.temporizador);
-    cerrarHoja();
+    if (!opciones.mantenerHoja) cerrarHoja();
     const hash = location.hash || '#/';
     const [patron, vista, pestaña] = RUTAS.find(([re]) => re.test(hash));
     const params = hash.match(patron).slice(1);
     document.querySelectorAll('.nav a').forEach((a) => a.classList.toggle('activo', a.dataset.ruta === pestaña));
     const contenedor = $('#vista');
-    window.scrollTo(0, 0);
+    if (!opciones.mantenerHoja) window.scrollTo(0, 0);
     try {
       await vista(contenedor, ...params);
     } catch (error) {
