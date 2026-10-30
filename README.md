@@ -49,6 +49,7 @@ El celular de tus compañeros necesita una dirección pública con HTTPS. Render
    (Otra opción: **New → Blueprint**, que lee `render.yaml` y llena todo solo.)
 4. Esperá a que diga **Live**. Te da una dirección como `https://ralin-go.onrender.com`.
 5. Abrí `https://TU-DIRECCION.onrender.com/presentar`. Esa pantalla muestra el **QR grande** y los contadores en vivo.
+6. El dashboard de reportes queda en la misma dirección: `https://TU-DIRECCION.onrender.com/insights`. No hay que publicarlo aparte.
 
 ### Cómo se instala en el teléfono
 - **Android (Chrome):** al abrirla aparece el botón *Instalar* en el inicio de la app, o desde el menú ⋮ → *Instalar app*.
@@ -100,6 +101,16 @@ curl https://TU-DIRECCION.onrender.com/api/productos/18
 ## 5. RALIN Insights (reportes para marcas)
 
 Dashboard en `/insights`. Cada marca ve solo sus productos.
+
+### Cómo abrirlo
+
+No se instala aparte: lo sirve el mismo servidor que la app, con la misma API y la misma base de datos.
+
+- **En tu computadora:** `npm start` y abrí http://localhost:3000/insights
+- **En Render:** después del `git push`, Render vuelve a publicar solo y queda en `https://TU-DIRECCION.onrender.com/insights`
+- **Desde la app:** *Panel en vivo de RALIN* → *Abrir RALIN Insights*
+
+Está pensado para pantalla de computadora; en el celular se acomoda, pero se aprovecha mejor en una laptop o un monitor.
 
 - **Indicadores:** ventas, unidades, disponibilidad en góndola, ventas perdidas por agotados y cupones, comparados con el período anterior.
 - **Gráficas:** ventas diarias contra ventas perdidas, con detalle al pasar el mouse, y disponibilidad por tienda frente a la meta del 98 %.
