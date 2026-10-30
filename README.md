@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/TU-USUARIO/ralin-go/actions/workflows/pruebas.yml"><img src="https://github.com/TU-USUARIO/ralin-go/actions/workflows/pruebas.yml/badge.svg" alt="Pruebas"></a>
+  <a href="https://github.com/drabeg/ralin-go/actions/workflows/pruebas.yml"><img src="https://img.shields.io/github/actions/workflow/status/drabeg/ralin-go/pruebas.yml?branch=main&label=pruebas&logo=githubactions&logoColor=white" alt="Pruebas"></a>
   <img src="https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white" alt="Node.js 22+">
   <img src="https://img.shields.io/badge/SQLite-node%3Asqlite-003B57?logo=sqlite&logoColor=white" alt="SQLite">
   <img src="https://img.shields.io/badge/PWA-instalable-5A0FC8?logo=pwa&logoColor=white" alt="PWA">
@@ -23,6 +23,7 @@
   <img src="docs/capturas/app-producto.png" alt="Disponibilidad por tienda" width="200">
   <img src="docs/capturas/app-cupon.png" alt="Cupón canjeado" width="200">
   <img src="docs/capturas/app-panel.png" alt="Panel en vivo" width="200">
+  <img src="docs/capturas/app-guia.png" alt="Guía en el pasillo: la etiqueta del producto parpadea en verde y la app muestra una respuesta de 0.52 s" width="200">
 </p>
 
 ---
