@@ -1,0 +1,16 @@
+{
+  "name": "ralin-go",
+  "version": "1.0.0",
+  "description": "RALIN Go: app de demostración que muestra la disponibilidad de productos por tienda, con API REST y base de datos SQLite.",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "seed": "node --disable-warning=ExperimentalWarning db/seed.js",
+    "test": "node --disable-warning=ExperimentalWarning --test test/api.test.js"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "license": "MIT"
+}

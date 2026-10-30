@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>RALIN Go</title>
+  <meta name="description" content="Encontrá qué tienda tiene tu producto, en tiempo real, y usá cupones de las marcas.">
+  <meta name="theme-color" content="#10243F">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icono-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="RALIN Go">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="barra">
+      <a class="logo" href="#/" aria-label="RALIN Go, inicio">
+        <span class="logo-marca">R</span><span class="logo-texto">RALIN <b>Go</b></span>
+      </a>
+      <button class="chip-tienda" id="btn-tienda" type="button" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+        <span id="nombre-tienda">Elegí tu tienda</span>
+        <svg class="flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+    </header>
+    <p class="aviso-demo">Demo académica · marcas, tiendas y datos ficticios</p>
+
+    <main id="vista" tabindex="-1" aria-live="polite"></main>
+
+    <nav class="nav" aria-label="Navegación principal">
+      <a href="#/" data-ruta="inicio">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 11h3v9h6v-6h2v6h6v-9h3z"/></svg><span>Inicio</span>
+      </a>
+      <a href="#/buscar" data-ruta="buscar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 0 1 5.6 11.2l5.1 5.1-1.4 1.4-5.1-5.1A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg><span>Buscar</span>
+      </a>
+      <a href="#/cupones" data-ruta="cupones">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 8h2v2h-2zm0 3h2v2h-2zm0 3h2v2h-2z"/></svg><span>Cupones</span>
+      </a>
+      <a href="#/lista" data-ruta="lista">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2v2H4zm4 0h12v2H8zM4 11h2v2H4zm4 0h12v2H8zm-4 6h2v2H4zm4 0h12v2H8z"/></svg><span>Mi lista</span><b class="contador" id="contador-lista" hidden>0</b>
+      </a>
+    </nav>
+  </div>
+
+  <div class="velo" id="velo" hidden></div>
+  <section class="hoja" id="hoja" role="dialog" aria-modal="true" aria-labelledby="hoja-titulo" hidden></section>
+  <div class="aviso" id="aviso" role="status" hidden></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RALIN Go · Escaneá y probá</title>
+  <link rel="icon" href="/icons/icono-192.png" type="image/png">
+  <style>
+    :root { --noche: #10243F; --noche-2: #1B365A; --ambar: #E9A23B; --crema: #F7F5F0; --suave: #C9D6E8; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at 25% 20%, var(--noche-2), var(--noche) 65%);
+      color: var(--crema);
+      display: grid; place-items: center; padding: 4vmin;
+    }
+    main { display: grid; grid-template-columns: auto 1fr; gap: 6vmin; align-items: center; max-width: 1400px; width: 100%; }
+    .qr { background: #fff; padding: 2.4vmin; border-radius: 3vmin; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+    .qr img { display: block; width: min(62vmin, 560px); height: auto; aspect-ratio: 1; }
+    .eyebrow { color: var(--ambar); font-weight: 800; letter-spacing: .25em; text-transform: uppercase; font-size: clamp(14px, 1.8vmin, 22px); }
+    h1 { font-size: clamp(36px, 7.5vmin, 96px); line-height: 1.02; margin: 1.5vmin 0 2vmin; }
+    h1 b { color: var(--ambar); }
+    .url { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: clamp(16px, 2.6vmin, 30px); color: var(--suave); word-break: break-all; }
+    ol { padding-left: 1.2em; margin: 3vmin 0; font-size: clamp(16px, 2.6vmin, 30px); line-height: 1.5; color: var(--suave); }
+    ol b { color: var(--crema); }
+    .vivo { display: flex; gap: 2vmin; flex-wrap: wrap; }
+    .dato { background: rgba(255,255,255,.07); border-radius: 2vmin; padding: 1.6vmin 2.4vmin; min-width: 22vmin; }
+    .dato b { display: block; font-size: clamp(28px, 6vmin, 72px); line-height: 1.05; }
+    .dato span { color: var(--suave); font-size: clamp(13px, 1.8vmin, 20px); }
+    .dato.ambar { background: var(--ambar); color: var(--noche); }
+    .dato.ambar span { color: var(--noche); }
+    a.volver { position: fixed; top: 16px; left: 16px; color: var(--suave); font-size: 14px; }
+    @media (max-width: 760px) { main { grid-template-columns: 1fr; justify-items: center; text-align: center; } .vivo { justify-content: center; } ol { text-align: left; } }
+  </style>
+</head>
+<body>
+  <a class="volver" href="/#/panel">← Panel</a>
+  <main>
+    <div class="qr"><img id="qr" alt="Código QR para abrir RALIN Go"></div>
+    <section>
+      <div class="eyebrow">Demo en vivo · RALIN</div>
+      <h1>Escaneá y probá <b>RALIN Go</b></h1>
+      <div class="url" id="url"></div>
+      <ol>
+        <li>Abrí la cámara y <b>escaneá el código</b>.</li>
+        <li>Buscá un producto y mirá <b>en qué tienda hay</b>.</li>
+        <li>Usá un <b>cupón</b>: cada canje le cobra Q2.50 a la marca.</li>
+      </ol>
+      <div class="vivo" aria-live="polite">
+        <div class="dato"><b id="usuarios">–</b><span>personas conectadas hoy</span></div>
+        <div class="dato"><b id="canjes">–</b><span>cupones canjeados</span></div>
+        <div class="dato ambar"><b id="facturado">–</b><span>facturado a marcas</span></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const origen = location.origin + '/';
+    document.getElementById('url').textContent = origen.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    document.getElementById('qr').src = '/api/qr.svg?texto=' + encodeURIComponent(origen);
+    async function actualizar() {
+      try {
+        const m = await (await fetch('/api/metricas')).json();
+        document.getElementById('usuarios').textContent = m.usuarios_hoy;
+        document.getElementById('canjes').textContent = m.cupones_canjeados;
+        document.getElementById('facturado').textContent = 'Q' + Number(m.facturado_marcas_q).toFixed(2);
+      } catch (e) { /* reintenta */ }
+    }
+    actualizar();
+    setInterval(actualizar, 4000);
+  </script>
+</body>
+</html>

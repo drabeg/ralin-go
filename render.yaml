@@ -1,0 +1,12 @@
+# Publicación en Render (plan gratuito). Render lee este archivo con "New > Blueprint".
+services:
+  - type: web
+    name: ralin-go
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/salud
+    envVars:
+      - key: NODE_VERSION
+        value: "22"

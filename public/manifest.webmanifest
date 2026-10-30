@@ -1,0 +1,17 @@
+{
+  "name": "RALIN Go",
+  "short_name": "RALIN Go",
+  "description": "Encontrá qué tienda tiene tu producto, en tiempo real, y usá cupones de las marcas.",
+  "lang": "es-GT",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#10243F",
+  "theme_color": "#10243F",
+  "icons": [
+    { "src": "/icons/icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
